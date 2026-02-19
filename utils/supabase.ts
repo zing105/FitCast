@@ -4,9 +4,8 @@
  */
 import { createClient } from '@supabase/supabase-js';
 
-// TODO: 사용자님의 Supabase 프로젝트 정보로 교체 필요
 // Dashboard -> Project Settings -> API 에서 확인 가능합니다.
-const SUPABASE_URL = 'https://sddyujjpxpdpzrdedgqy.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_Glp2G6vwkse3Jp4dg93Rlw_wEJp6QXm';
+const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
+const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);

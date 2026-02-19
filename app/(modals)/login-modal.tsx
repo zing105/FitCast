@@ -26,8 +26,8 @@ const { width } = Dimensions.get('window');
 
 // 각 플랫폼별 클라이언트 ID
 const GOOGLE_CLIENT_IDS = {
-  web: '490501029302-a5pbc17jhs14cv5201frf45l777ofkds.apps.googleusercontent.com', // Web OAuth Client
-  ios: '490501029302-jh7frs7v5glpv15k0ni7c87pglo89hfu.apps.googleusercontent.com', // iOS OAuth Client (Expo Go용)
+  web: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID, // Web OAuth Client
+  ios: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID, // iOS OAuth Client
 };
 
 export default function LoginModalScreen() {
