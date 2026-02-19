@@ -1,57 +1,120 @@
+/**
+ * Tab Navigation Layout
+ * 메인 탭 내비게이션 설정 - 홈, 옷장, 마이페이지
+ */
+import { Ionicons } from '@expo/vector-icons';
+import { Tabs } from 'expo-router';
 import React from 'react';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Link, Tabs } from 'expo-router';
-import { Pressable } from 'react-native';
+import { View } from 'react-native';
 
-import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
-import { useClientOnlyValue } from '@/components/useClientOnlyValue';
+import { neutral, primary, surface } from '@/design-tokens';
 
-// You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
+// 탭 바 아이콘 컴포넌트
 function TabBarIcon(props: {
-  name: React.ComponentProps<typeof FontAwesome>['name'];
+  name: React.ComponentProps<typeof Ionicons>['name'];
   color: string;
+  focused: boolean;
 }) {
-  return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
+  return (
+    <View className="items-center justify-center">
+      <Ionicons 
+        size={24} 
+        style={{ marginBottom: -3 }} 
+        name={props.name} 
+        color={props.color} 
+      />
+    </View>
+  );
 }
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  
+  // 테마에 따른 색상 설정 (Light Mode 강제)
+  const isDark = false; // colorScheme === 'dark';
+  const activeColor = primary[500];
+  const inactiveColor = neutral[500];
+  const backgroundColor = surface.light.surface;
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        // Disable the static render of the header on web
-        // to prevent a hydration error in React Navigation v6.
-        headerShown: useClientOnlyValue(false, true),
-      }}>
+        tabBarActiveTintColor: activeColor,
+        tabBarInactiveTintColor: inactiveColor,
+        tabBarStyle: {
+          backgroundColor: backgroundColor,
+          borderTopWidth: 0,
+          elevation: 8,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 8,
+          height: 64,
+          paddingBottom: 8,
+          paddingTop: 8,
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: '500',
+        },
+        headerStyle: {
+          backgroundColor: backgroundColor,
+          elevation: 0,
+          shadowOpacity: 0,
+        },
+        headerTintColor: isDark ? '#fff' : '#000',
+        headerTitleStyle: {
+          fontWeight: '600',
+          fontSize: 18,
+        },
+      }}
+    >
+      {/* 홈 탭 */}
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Tab One',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-          headerRight: () => (
-            <Link href="/modal" asChild>
-              <Pressable>
-                {({ pressed }) => (
-                  <FontAwesome
-                    name="info-circle"
-                    size={25}
-                    color={Colors[colorScheme ?? 'light'].text}
-                    style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
-                  />
-                )}
-              </Pressable>
-            </Link>
+          title: '홈',
+          headerTitle: 'OOTD Archive',
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon 
+              name={focused ? 'home' : 'home-outline'} 
+              color={color} 
+              focused={focused} 
+            />
           ),
         }}
       />
+      
+      {/* 옷장 탭 */}
       <Tabs.Screen
-        name="two"
+        name="closet"
         options={{
-          title: 'Tab Two',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          title: '옷장',
+          headerTitle: '내 옷장',
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon 
+              name={focused ? 'shirt' : 'shirt-outline'} 
+              color={color} 
+              focused={focused} 
+            />
+          ),
+        }}
+      />
+      
+      {/* 마이페이지 탭 */}
+      <Tabs.Screen
+        name="mypage"
+        options={{
+          title: '마이',
+          headerTitle: '마이페이지',
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon 
+              name={focused ? 'person' : 'person-outline'} 
+              color={color} 
+              focused={focused} 
+            />
+          ),
         }}
       />
     </Tabs>

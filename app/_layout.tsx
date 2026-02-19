@@ -1,24 +1,32 @@
+/**
+ * Root Layout
+ * 앱의 최상위 레이아웃 - NativeWind 및 테마 설정
+ */
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+
+// NativeWind 글로벌 CSS 임포트
+import '../global.css';
 
 import { useColorScheme } from '@/components/useColorScheme';
 
 export {
   // Catch any errors thrown by the Layout component.
-  ErrorBoundary,
+  ErrorBoundary
 } from 'expo-router';
 
 export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
+  // (tabs)가 초기 라우트
   initialRouteName: '(tabs)',
 };
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
+// 에셋 로딩 완료 전 스플래시 화면 유지
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -27,11 +35,12 @@ export default function RootLayout() {
     ...FontAwesome.font,
   });
 
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
+  // 폰트 로딩 에러 처리
   useEffect(() => {
     if (error) throw error;
   }, [error]);
 
+  // 폰트 로딩 완료 후 스플래시 화면 숨김
   useEffect(() => {
     if (loaded) {
       SplashScreen.hideAsync();
@@ -49,11 +58,44 @@ function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-      </Stack>
-    </ThemeProvider>
+    <SafeAreaProvider>
+      <ThemeProvider value={DefaultTheme}>
+        <Stack>
+          {/* 메인 탭 내비게이션 */}
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          
+          {/* 카메라 플로우 (모달) */}
+          <Stack.Screen 
+            name="(modals)/camera" 
+            options={{ 
+              headerShown: false,
+              presentation: 'modal',
+            }} 
+          />
+          <Stack.Screen 
+            name="(modals)/preview" 
+            options={{ 
+              headerShown: false,
+              presentation: 'modal',
+            }} 
+          />
+          <Stack.Screen 
+            name="ootd-detail" 
+            options={{ 
+              headerShown: false,
+              presentation: 'modal',
+            }} 
+          />
+          <Stack.Screen 
+            name="(modals)/login-modal" 
+            options={{ 
+              headerShown: false,
+              presentation: 'transparentModal',
+              animation: 'fade',
+            }} 
+          />
+        </Stack>
+      </ThemeProvider>
+    </SafeAreaProvider>
   );
 }

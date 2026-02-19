@@ -1,0 +1,7 @@
+/**
+ * Global CSS for NativeWind
+ * Tailwind 지시어 포함
+ */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
