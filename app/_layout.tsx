@@ -3,6 +3,7 @@
  * 앱의 최상위 레이아웃 - NativeWind 및 테마 설정
  */
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
@@ -17,8 +18,8 @@ import '../global.css';
 import { useColorScheme } from '@/components/useColorScheme';
 
 export {
-  // Catch any errors thrown by the Layout component.
-  ErrorBoundary
+    // Catch any errors thrown by the Layout component.
+    ErrorBoundary
 } from 'expo-router';
 
 export const unstable_settings = {
@@ -33,6 +34,7 @@ export default function RootLayout() {
   const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
     ...FontAwesome.font,
+    ...Ionicons.font,
   });
 
   // 폰트 로딩 에러 처리
