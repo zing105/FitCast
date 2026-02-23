@@ -8,12 +8,16 @@ import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import * as WebBrowser from 'expo-web-browser';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 // NativeWind 글로벌 CSS 임포트
 import '../global.css';
+
+// 웹에서 구글 로그인 팝업이 부모 창으로 인증 상태를 전달하고 닫히도록 필수 설정
+WebBrowser.maybeCompleteAuthSession();
 
 import { useColorScheme } from '@/components/useColorScheme';
 

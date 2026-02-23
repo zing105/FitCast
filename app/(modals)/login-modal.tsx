@@ -10,7 +10,6 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import * as AuthSession from 'expo-auth-session';
 import * as Google from 'expo-auth-session/providers/google';
 import { useRouter } from 'expo-router';
-import * as WebBrowser from 'expo-web-browser';
 import { useEffect } from 'react';
 import {
     Dimensions,
@@ -19,8 +18,6 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
-
-WebBrowser.maybeCompleteAuthSession();
 
 const { width } = Dimensions.get('window');
 
@@ -117,14 +114,9 @@ export default function LoginModalScreen() {
   };
 
   const handleGoogleLogin = () => {
-    // Web 환경에서는 팝업 방식이 더 안정적일 수 있음
-    if (Platform.OS === 'web') {
-      promptAsync({
-        windowFeatures: { width: 700, height: 600 },
-      });
-    } else {
-      promptAsync();
-    }
+    // Web 환경에서도 기본 promptAsync 동작을 사용하여 AuthSession이 URL의 결과 메시지를 
+    // 부모 창으로 안전하게 전송할 수 있도록 합니다. 팝업 크기를 강제하면 간혹 origin 통신이 끊어집니다.
+    promptAsync();
   };
 
   return (
