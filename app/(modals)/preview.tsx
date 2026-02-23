@@ -6,13 +6,16 @@ import { Button } from '@/components/ui/Button';
 import { Screen } from '@/components/ui/Screen';
 import { neutral, primary } from '@/design-tokens';
 import { Ionicons } from '@expo/vector-icons';
+import * as FileSystem from 'expo-file-system';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Dimensions, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 const { width: screenWidth } = Dimensions.get('window');
 
+import { useAuthStore } from '@/store/authStore';
 import { useClosetStore } from '@/store/closetStore';
+import { uploadClothImage } from '@/utils/supabaseStorage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 // Mock Analysis Data (나중에 실제 AI로 대체)
@@ -44,32 +47,60 @@ export default function PreviewScreen() {
     return () => clearTimeout(timer);
   }, []);
 
+  const [isSaving, setIsSaving] = useState(false);
+  const { user } = useAuthStore();
+
   // 다시 찍기
   const handleRetake = () => {
     router.back();
   };
 
-  // 저장하기 로직 연결
-  const handleSave = () => {
-    if (!analysisResult) return;
+  // 저장하기 로직 연결 (Supabase 업로드 포함)
+  const handleSave = async () => {
+    if (!analysisResult || !user) {
+      alert('로그인이 필요하거나 분석이 완료되지 않았습니다.');
+      return;
+    }
 
-    // Store에 아이템 추가
-    addItem({
-      image: { uri: photoUri }, // 로컬 이미지 URI 사용
-      category: analysisResult.category.toLowerCase(), // 'Top' -> 'top'
-      subCategory: analysisResult.subCategory,
-      brand: 'Unknown', // 나중에 입력받을 수 있음
-      color: analysisResult.color,
-      pattern: analysisResult.pattern,
-      material: analysisResult.material,
-      season: analysisResult.season,
-    });
-    
-    console.log('✨ 옷장에 저장 완료!', { photoUri });
-    
-    // 홈으로 이동 및 스택 초기화
-    router.dismissAll();
-    router.replace('/(tabs)/closet');
+    try {
+      setIsSaving(true);
+      
+      // 1. 이미지를 Base64로 변환
+      const base64Image = await FileSystem.readAsStringAsync(photoUri, {
+        // @ts-ignore
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      // 2. 파일명 생성 (타임스탬프 기반)
+      const fileName = `${user.id}_${Date.now()}.jpg`;
+
+      // 3. Supabase Storage에 업로드 후 Public URL 받기
+      const imageUrl = await uploadClothImage(base64Image, fileName);
+
+      // 4. DB에 메타데이터와 함께 저장
+      await addItem({
+        image_url: imageUrl, 
+        category: analysisResult.category.toLowerCase(), 
+        sub_category: analysisResult.subCategory,
+        brand: 'Unknown', 
+        color: analysisResult.color,
+        pattern: analysisResult.pattern,
+        material: analysisResult.material,
+        season: analysisResult.season,
+      }, user.id);
+      
+      console.log('✨ 옷장에 저장 완료!', { imageUrl });
+      
+      // 홈으로 이동 및 스택 초기화
+      router.dismissAll();
+      router.replace('/(tabs)/closet');
+      
+    } catch (error) {
+      console.error('옷 저장 전체 플로우 에러:', error);
+      alert('저장 중 오류가 발생했습니다. 다시 시도해 주세요.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   if (isAnalyzing) {

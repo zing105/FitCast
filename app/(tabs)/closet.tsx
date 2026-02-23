@@ -25,7 +25,7 @@ const CATEGORIES = [
  * 임시 Mock Data 타입 정의
  */
 import { useAuthStore } from '@/store/authStore';
-import { ClothItem, useClosetStore } from '@/store/closetStore';
+import { UIClothItem, useClosetStore } from '@/store/closetStore';
 
 // ... (imports remain)
 
@@ -33,13 +33,20 @@ import { ClothItem, useClosetStore } from '@/store/closetStore';
 
 export default function ClosetScreen() {
   const router = useRouter();
-  const items = useClosetStore((state: any) => state.items); // Real Data from Store
-  const { isLoggedIn } = useAuthStore();
+  const { items, fetchItems, isLoading } = useClosetStore(); // Real Data from Store
+  const { isLoggedIn, user } = useAuthStore();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
+  // 🌟 사용자가 로그인되어 있으면 옷 데이터 불러오기
+  React.useEffect(() => {
+    if (isLoggedIn && user?.id) {
+      fetchItems(user.id);
+    }
+  }, [isLoggedIn, user, fetchItems]);
+
   // 카테고리 + 검색어 복합 필터링
-  const filteredItems = items.filter((item: ClothItem) => {
+  const filteredItems = items.filter((item: UIClothItem) => {
     const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
     const matchesSearch = 
       item.brand?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -50,7 +57,7 @@ export default function ClosetScreen() {
     return matchesCategory && matchesSearch;
   });
 
-  const renderItem = ({ item }: { item: ClothItem }) => (
+  const renderItem = ({ item }: { item: UIClothItem }) => (
     <View className="flex-1 m-1.5 mb-4">
       <View className="aspect-[3/4] bg-neutral-100 rounded-2xl mb-2 overflow-hidden items-center justify-center relative">
          {item.image ? (

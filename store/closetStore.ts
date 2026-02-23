@@ -1,7 +1,4 @@
-/**
- * Closet Store
- * 옷장 데이터를 전역적으로 관리하는 Zustand Store
- */
+import { supabase } from '@/utils/supabase';
 import { create } from 'zustand';
 
 // 코디 데이터 타입 정의
@@ -12,91 +9,125 @@ export interface Outfit {
     name?: string;
 }
 
-// 의류 아이템 타입 정의
+// 의류 아이템 타입 정의 (DB 스키마)
 export interface ClothItem {
     id: string;
-    image: any;
+    image_url: string; // DB 컬럼명 매칭
     category: string;
-    subCategory: string;
+    sub_category: string | null;
     brand?: string;
     color?: string;
     pattern?: string;
     material?: string;
     season?: string[];
+    created_at?: string;
+}
+
+// UI 컴포넌트 호환성을 위한 구버전 매핑
+export interface UIClothItem extends Omit<ClothItem, 'image_url' | 'sub_category' | 'created_at'> {
+    image: { uri: string };
+    subCategory: string;
     createdAt: number;
 }
 
 // Store 상태 정의
 interface ClosetState {
-    items: ClothItem[];
+    items: UIClothItem[];
     savedOutfits: Outfit[];
     lastWornOutfit: { ids: string[]; timestamp: number } | null;
-    addItem: (item: Omit<ClothItem, 'id' | 'createdAt'>) => void;
-    removeItem: (id: string) => void;
+    isLoading: boolean;
+
+    // 비동기 액션
+    fetchItems: (userId: string) => Promise<void>;
+    addItem: (itemData: Omit<ClothItem, 'id' | 'created_at' | 'user_id'>, userId: string) => Promise<void>;
+    removeItem: (id: string, userId: string) => Promise<void>;
     setLastWornOutfit: (ids: string[]) => void;
     saveOutfit: (itemIds: string[], name?: string) => void;
     removeOutfit: (id: string) => void;
 }
 
-// 초기 Mock Data (Gemini Banana 에셋 포함)
-const INITIAL_ITEMS: ClothItem[] = [
-    {
-        id: '1',
-        image: require('@/assets/images/clothes/banana_tshirt.png'),
-        category: 'top',
-        subCategory: 'T-Shirt',
-        brand: 'Gemini Banana',
-        color: 'White',
-        createdAt: Date.now() - 100000
-    },
-    {
-        id: '2',
-        image: require('@/assets/images/clothes/banana_hoodie.png'),
-        category: 'outer',
-        subCategory: 'Hoodie',
-        brand: 'Gemini Banana',
-        color: 'Navy',
-        createdAt: Date.now() - 200000
-    },
-    {
-        id: '3',
-        image: require('@/assets/images/clothes/banana_cap.png'),
-        category: 'acc',
-        subCategory: 'Cap',
-        brand: 'Gemini Banana',
-        color: 'Black',
-        createdAt: Date.now() - 300000
-    },
-    {
-        id: '4',
-        image: { uri: 'https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=800&q=80' },
-        category: 'bottom',
-        subCategory: 'Blue Jeans',
-        brand: 'Levis',
-        color: 'Blue',
-        createdAt: Date.now() - 400000
-    },
-];
+// DB 모델을 UI 모델로 변환 (기존 컴포넌트 안 깨지게)
+const mapDBToUI = (dbItem: ClothItem): UIClothItem => ({
+    ...dbItem,
+    image: { uri: dbItem.image_url },
+    subCategory: dbItem.sub_category || '기타',
+    createdAt: dbItem.created_at ? new Date(dbItem.created_at).getTime() : Date.now(),
+});
 
-export const useClosetStore = create<ClosetState>((set) => ({
-    items: INITIAL_ITEMS,
+export const useClosetStore = create<ClosetState>((set, get) => ({
+    items: [],
     savedOutfits: [],
     lastWornOutfit: null,
+    isLoading: false,
 
-    addItem: (newItem) => set((state) => ({
-        items: [
-            {
-                ...newItem,
-                id: Math.random().toString(36).substr(2, 9),
-                createdAt: Date.now(),
-            },
-            ...state.items,
-        ],
-    })),
+    // 내 옷장 불러오기 (Supabase SELECT)
+    fetchItems: async (userId: string) => {
+        set({ isLoading: true });
+        try {
+            const { data, error } = await supabase
+                .from('clothes')
+                .select('*')
+                .eq('user_id', userId)
+                .order('created_at', { ascending: false });
 
-    removeItem: (id) => set((state) => ({
-        items: state.items.filter((item) => item.id !== id),
-    })),
+            if (error) throw error;
+
+            if (data) {
+                // UI용 데이터 스펙으로 변환해서 저장
+                set({ items: data.map(mapDBToUI) });
+            }
+        } catch (error) {
+            console.error('옷 데이터를 불러오는 데 실패했습니다:', error);
+        } finally {
+            set({ isLoading: false });
+        }
+    },
+
+    // 🌟 새로운 옷 추가 (DB INSERT) -> 이후 다시 fetch
+    addItem: async (itemData, userId) => {
+        set({ isLoading: true });
+        try {
+            const dbPayload = {
+                ...itemData,
+                user_id: userId,
+            };
+
+            const { error } = await supabase
+                .from('clothes')
+                .insert([dbPayload]);
+
+            if (error) throw error;
+
+            // 추가 후 내 옷장 최신화
+            await get().fetchItems(userId);
+
+        } catch (error) {
+            console.error('옷 저장 실패:', error);
+            throw error;
+        } finally {
+            set({ isLoading: false });
+        }
+    },
+
+    // 서버에서 옷 삭제
+    removeItem: async (id, userId) => {
+        try {
+            const { error } = await supabase
+                .from('clothes')
+                .delete()
+                .eq('id', id)
+                .eq('user_id', userId);
+
+            if (error) throw error;
+
+            // 로컬 상태 즉시 반영 (낙관적 업데이트)
+            set((state) => ({
+                items: state.items.filter((item) => item.id !== id),
+            }));
+        } catch (error) {
+            console.error('옷 삭제 실패:', error);
+        }
+    },
 
     setLastWornOutfit: (ids) => set({
         lastWornOutfit: { ids, timestamp: Date.now() }
@@ -105,7 +136,7 @@ export const useClosetStore = create<ClosetState>((set) => ({
     saveOutfit: (itemIds, name) => set((state) => ({
         savedOutfits: [
             {
-                id: Math.random().toString(36).substr(2, 9),
+                id: Math.random().toString(36).substr(2, 9), // TODO: 코디도 DB 연결 필요
                 itemIds,
                 name,
                 timestamp: Date.now(),
