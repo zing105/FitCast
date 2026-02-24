@@ -6,6 +6,7 @@ import { AnimatedMeshGradient } from '@/components/ui/AnimatedMeshGradient';
 import { Screen } from '@/components/ui/Screen';
 import { primary } from '@/design-tokens';
 import { useAuthStore } from '@/store/authStore';
+import { supabase } from '@/utils/supabase';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as AuthSession from 'expo-auth-session';
 import * as Google from 'expo-auth-session/providers/google';
@@ -60,36 +61,40 @@ export default function LoginModalScreen() {
       
       console.log('🔍 Auth Response:', authentication);
       
-      if (authentication?.accessToken) {
-        handleSignInWithGoogle(authentication.accessToken);
+      // ✅ 중요한 변경점: Supabase 연동을 위해서는 accessToken이 아닌 idToken이 필요합니다.
+      if (authentication?.idToken) {
+        handleSignInWithSupabase(authentication.idToken, authentication.accessToken);
       } else {
-        alert('인증 토큰을 받지 못했습니다.');
+        alert('ID 토큰을 받지 못했습니다. Google Cloud Console에서 클라이언트 ID 설정을 확인해주세요.');
       }
     } else if (response?.type === 'error' || response?.type === 'cancel') {
        console.log('❌ Auth Error:', response);
     }
   }, [response]);
 
-  // Google Access Token으로 사용자 정보 가져오기
-  const handleSignInWithGoogle = async (accessToken: string) => {
+  // Google ID Token으로 Supabase 세션 생성 및 사용자 정보 가져오기
+  const handleSignInWithSupabase = async (idToken: string, accessToken?: string) => {
     try {
-      console.log('🚀 Fetching user info with Google Access Token');
+      console.log('🚀 Authenticating with Supabase using Google ID Token');
       
-      // Access Token으로 사용자 정보 가져오기
-      const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-        headers: { Authorization: `Bearer ${accessToken}` },
+      // 1. Supabase Auth 호출 (가장 중요! RLS 통과를 위한 핵심)
+      const { data, error } = await supabase.auth.signInWithIdToken({
+        provider: 'google',
+        token: idToken,
+        access_token: accessToken, // 선택사항
       });
+
+      if (error) throw error;
       
-      const userInfo = await userInfoResponse.json();
-      
-      if (userInfo &&userInfo.email) {
+      // 2. Zustand Auth Store에 로그인 정보 저장 (기존 로직 유지)
+      if (data.user) {
         login({
-          id: userInfo.id || 'google-user',
-          email: userInfo.email || '',
-          name: userInfo.name || 'User',
-          avatar: userInfo.picture,
+          id: data.user.id, // Supabase가 발급한 UUID 사용
+          email: data.user.email || '',
+          name: data.user.user_metadata?.full_name || 'User',
+          avatar: data.user.user_metadata?.avatar_url || '',
         });
-        console.log('✅ Google Login Success:', userInfo);
+        console.log('✅ Supabase & Google Login Success:', data.user.email);
         router.back();
       } else {
         throw new Error('사용자 정보를 가져올 수 없습니다.');
