@@ -9,7 +9,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Dimensions, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Dimensions, Image, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -65,11 +65,29 @@ export default function PreviewScreen() {
     try {
       setIsSaving(true);
       
-      // 1. 이미지를 Base64로 변환
-      const base64Image = await FileSystem.readAsStringAsync(photoUri, {
-        // @ts-ignore
-        encoding: FileSystem.EncodingType.Base64,
-      });
+      // 1. 이미지를 Base64로 변환 (플랫폼별 분기 처리)
+      let base64Image = '';
+      if (Platform.OS === 'web') {
+        // 웹 브라우저에서는 fetch + FileReader 조합 사용
+        const response = await fetch(photoUri);
+        const blob = await response.blob();
+        base64Image = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const result = reader.result as string;
+            // 'data:image/jpeg;base64,' 접두사 제거
+            resolve(result.split(',')[1]);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      } else {
+        // 네이티브(iOS/Android)에서는 expo-file-system 사용
+        base64Image = await FileSystem.readAsStringAsync(photoUri, {
+          // @ts-ignore
+          encoding: FileSystem.EncodingType.Base64,
+        });
+      }
 
       // 2. 파일명 생성 (타임스탬프 기반)
       const fileName = `${user.id}_${Date.now()}.jpg`;

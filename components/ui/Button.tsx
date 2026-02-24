@@ -6,15 +6,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
-    ActivityIndicator,
-    Text,
-    TouchableOpacity
+  ActivityIndicator,
+  Text,
+  TouchableOpacity
 } from 'react-native';
-import Animated, {
-    useAnimatedStyle,
-    useSharedValue,
-    withTiming,
-} from 'react-native-reanimated';
 
 // 버튼 변형 타입
 type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'text';
@@ -42,8 +37,6 @@ interface ButtonProps {
   /** 추가 스타일 클래스 */
   className?: string;
 }
-
-const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
 /**
  * 재사용 가능한 버튼 컴포넌트
@@ -76,8 +69,6 @@ export function Button({
   onPress,
   className = '',
 }: ButtonProps) {
-  const opacity = useSharedValue(1);
-
   // 크기별 스타일
   const sizeStyles: Record<ButtonSize, { container: string; text: string; icon: number }> = {
     sm: { container: 'h-8 px-3', text: 'text-label-md', icon: 16 },
@@ -116,37 +107,14 @@ export function Button({
   const currentSize = sizeStyles[size];
   const currentVariant = variantStyles[variant];
 
-  // 애니메이션 스타일 (활성화/비활성화)
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-  }));
-
-  const handlePressIn = () => {
-    opacity.value = withTiming(0.7, { duration: 100 });
-  };
-
-  const handlePressOut = () => {
-    opacity.value = withTiming(1, { duration: 100 });
-  };
-
   // 컨테이너 클래스
-  const containerClasses = `
-    flex-row items-center justify-center rounded-xl
-    ${currentSize.container}
-    ${currentVariant.container}
-    ${fullWidth ? 'w-full' : ''}
-    ${disabled ? 'opacity-50' : ''}
-    ${className}
-  `.trim();
+  const containerClasses = `flex-row items-center justify-center rounded-xl ${currentSize.container} ${currentVariant.container} ${fullWidth ? 'w-full' : ''} ${disabled || loading ? 'opacity-50' : ''} ${className}`.trim();
 
   return (
-    <AnimatedTouchable
+    <TouchableOpacity
       onPress={onPress}
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
       disabled={disabled || loading}
-      activeOpacity={1}
-      style={animatedStyle}
+      activeOpacity={0.7}
       className={containerClasses}
     >
       {loading ? (
@@ -177,7 +145,7 @@ export function Button({
           )}
         </>
       )}
-    </AnimatedTouchable>
+    </TouchableOpacity>
   );
 }
 
