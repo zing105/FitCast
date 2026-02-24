@@ -13,11 +13,11 @@ import * as Google from 'expo-auth-session/providers/google';
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import {
-    Dimensions,
-    Platform,
-    Text,
-    TouchableOpacity,
-    View
+  Dimensions,
+  Platform,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 const { width } = Dimensions.get('window');
@@ -43,8 +43,8 @@ export default function LoginModalScreen() {
   
   console.log('🔗 Redirect URI:', finalRedirectUri);
   
-  // Google 인증 요청 훅 설정
   const config = {
+    clientId: GOOGLE_CLIENT_IDS.web, // useIdTokenAuthRequest는 clientId로 웹 클라이언트 ID를 받습니다.
     webClientId: GOOGLE_CLIENT_IDS.web,
     iosClientId: GOOGLE_CLIENT_IDS.ios, // Native App/Dev Build에서는 Native ID 사용
     androidClientId: GOOGLE_CLIENT_IDS.web, // Android ID 없으므로 Web으로 유지 (필요시 추가)
@@ -52,7 +52,7 @@ export default function LoginModalScreen() {
     // redirectUri는 플랫폼에 따라 자동 처리되거나 finalRedirectUri 사용
   };
 
-  const [request, response, promptAsync] = Google.useAuthRequest(config);
+  const [request, response, promptAsync] = Google.useIdTokenAuthRequest(config);
 
   // 인증 결과 응답 처리
   useEffect(() => {
