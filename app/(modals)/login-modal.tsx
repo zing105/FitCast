@@ -6,17 +6,18 @@ import { AnimatedMeshGradient } from '@/components/ui/AnimatedMeshGradient';
 import { Screen } from '@/components/ui/Screen';
 import { primary } from '@/design-tokens';
 import { useAuthStore } from '@/store/authStore';
+import { supabase } from '@/utils/supabase';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as AuthSession from 'expo-auth-session';
 import * as Google from 'expo-auth-session/providers/google';
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import {
-    Dimensions,
-    Platform,
-    Text,
-    TouchableOpacity,
-    View
+  Dimensions,
+  Platform,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 const { width } = Dimensions.get('window');
@@ -58,10 +59,14 @@ export default function LoginModalScreen() {
     if (response?.type === 'success') {
       const { authentication } = response;
       
-      console.log('🔍 Auth Response:', authentication);
+      console.log('🔍 Auth Response type: success');
       
-      if (authentication?.accessToken) {
-        handleSignInWithGoogle(authentication.accessToken);
+      // id_token이 있으면 Supabase Auth 연동 (세션 유지 + RLS 통과)
+      if (authentication?.idToken) {
+        handleSignInWithGoogle(authentication.idToken);
+      } else if (authentication?.accessToken) {
+        // id_token이 없는 경우 accessToken으로 사용자 정보만 가져오기 (폴백)
+        handleFallbackLogin(authentication.accessToken);
       } else {
         alert('인증 토큰을 받지 못했습니다.');
       }
@@ -70,46 +75,62 @@ export default function LoginModalScreen() {
     }
   }, [response]);
 
-  // Google Access Token으로 사용자 정보 가져오기
-  const handleSignInWithGoogle = async (accessToken: string) => {
+  // ✅ Supabase Auth와 Google ID Token 연동 (핵심!)
+  const handleSignInWithGoogle = async (idToken: string) => {
     try {
-      console.log('🚀 Fetching user info with Google Access Token');
+      console.log('🚀 Supabase signInWithIdToken 시작');
       
-      // Access Token으로 사용자 정보 가져오기
+      // Google ID Token을 Supabase Auth에 전달 → JWT 세션 발급
+      const { data, error } = await supabase.auth.signInWithIdToken({
+        provider: 'google',
+        token: idToken,
+      });
+
+      if (error) throw error;
+
+      if (data.user) {
+        login({
+          id: data.user.id, // Supabase Auth의 UUID (RLS에서 auth.uid()로 사용됨)
+          email: data.user.email || '',
+          name: data.user.user_metadata?.full_name || 'User',
+          avatar: data.user.user_metadata?.avatar_url,
+        });
+        console.log('✅ Supabase Auth 로그인 성공:', data.user.email);
+        console.log('🔑 세션 토큰 발급 완료 (RLS 통과 가능)');
+        router.back();
+      }
+    } catch (error: any) {
+      console.error('❌ Supabase Auth Error:', error);
+      alert(`로그인 오류: ${error.message}`);
+    }
+  };
+
+  // 📌 폴백: id_token 없을 때 Access Token으로 사용자 정보만 가져오기
+  const handleFallbackLogin = async (accessToken: string) => {
+    try {
+      console.log('⚠️ id_token 없음, Access Token으로 폴백 로그인');
+      
       const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
       
       const userInfo = await userInfoResponse.json();
       
-      if (userInfo &&userInfo.email) {
+      if (userInfo && userInfo.email) {
         login({
           id: userInfo.id || 'google-user',
           email: userInfo.email || '',
           name: userInfo.name || 'User',
           avatar: userInfo.picture,
         });
-        console.log('✅ Google Login Success:', userInfo);
+        console.log('✅ 폴백 로그인 성공 (세션 유지/RLS 미지원):', userInfo.email);
         router.back();
       } else {
         throw new Error('사용자 정보를 가져올 수 없습니다.');
       }
     } catch (error: any) {
-      console.error('❌ Login Error:', error);
+      console.error('❌ Fallback Login Error:', error);
       alert(`로그인 오류: ${error.message}`);
-    }
-  };
-
-  const completeLogin = (user: any) => {
-    if (user) {
-      login({
-        id: user.id || 'google-user',
-        email: user.email || '',
-        name: user.user_metadata?.full_name || user.name || 'User',
-        avatar: user.user_metadata?.avatar_url || user.picture,
-      });
-      console.log('✅ Login Process Completed');
-      router.back();
     }
   };
 

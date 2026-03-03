@@ -20,6 +20,7 @@ import '../global.css';
 WebBrowser.maybeCompleteAuthSession();
 
 import { useColorScheme } from '@/components/useColorScheme';
+import { useAuthStore } from '@/store/authStore';
 
 export {
     // Catch any errors thrown by the Layout component.
@@ -41,10 +42,17 @@ export default function RootLayout() {
     ...Ionicons.font,
   });
 
+  const restoreSession = useAuthStore((state) => state.restoreSession);
+
   // 폰트 로딩 에러 처리
   useEffect(() => {
     if (error) throw error;
   }, [error]);
+
+  // 앱 시작 시 Supabase 세션 복원 (새로고침 후에도 로그인 유지)
+  useEffect(() => {
+    restoreSession();
+  }, []);
 
   // 폰트 로딩 완료 후 스플래시 화면 숨김
   useEffect(() => {
