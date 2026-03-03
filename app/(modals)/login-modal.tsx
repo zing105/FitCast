@@ -13,11 +13,11 @@ import * as Google from 'expo-auth-session/providers/google';
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import {
-  Dimensions,
-  Platform,
-  Text,
-  TouchableOpacity,
-  View
+    Dimensions,
+    Platform,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 
 const { width } = Dimensions.get('window');
@@ -43,11 +43,15 @@ export default function LoginModalScreen() {
   
   console.log('🔗 Redirect URI:', finalRedirectUri);
   
+  // Google 인증 요청 훅 설정
   const config = {
-    clientId: GOOGLE_CLIENT_IDS.web, // useIdTokenAuthRequest는 기본적으로 clientId를 검사합니다.
+    // 💡 아주 중요한 설정: Supabase는 "누구를 위해 생성된 토큰인가?(aud)"를 엄격히 검사합니다.
+    // Supabase 대시보드에 Web Client ID 하나만 등록했으므로, 
+    // iOS/Android 상관없이 'clientId'는 무조건 Web Client ID로 고정해야 매칭 에러(400)가 안 납니다!
+    clientId: GOOGLE_CLIENT_IDS.web, 
     webClientId: GOOGLE_CLIENT_IDS.web,
-    iosClientId: GOOGLE_CLIENT_IDS.ios, // Native App/Dev Build에서는 Native ID 사용
-    androidClientId: GOOGLE_CLIENT_IDS.web, // Android ID 없으므로 Web으로 유지 (필요시 추가)
+    iosClientId: GOOGLE_CLIENT_IDS.ios, // 네이티브 팝업용이지만, 토큰 자체의 aud는 webClientId를 향해야 함
+    androidClientId: GOOGLE_CLIENT_IDS.web,
     scopes: ['profile', 'email', 'openid'],
     responseType: 'id_token', // 명시적으로 ID 토큰 요청
     // redirectUri는 플랫폼에 따라 자동 처리되거나 finalRedirectUri 사용
