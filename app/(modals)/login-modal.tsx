@@ -44,11 +44,12 @@ export default function LoginModalScreen() {
   console.log('🔗 Redirect URI:', finalRedirectUri);
   
   const config = {
-    clientId: GOOGLE_CLIENT_IDS.web, // useIdTokenAuthRequest는 clientId로 웹 클라이언트 ID를 받습니다.
+    clientId: GOOGLE_CLIENT_IDS.web, // useIdTokenAuthRequest는 기본적으로 clientId를 검사합니다.
     webClientId: GOOGLE_CLIENT_IDS.web,
     iosClientId: GOOGLE_CLIENT_IDS.ios, // Native App/Dev Build에서는 Native ID 사용
     androidClientId: GOOGLE_CLIENT_IDS.web, // Android ID 없으므로 Web으로 유지 (필요시 추가)
     scopes: ['profile', 'email', 'openid'],
+    responseType: 'id_token', // 명시적으로 ID 토큰 요청
     // redirectUri는 플랫폼에 따라 자동 처리되거나 finalRedirectUri 사용
   };
 
@@ -57,18 +58,24 @@ export default function LoginModalScreen() {
   // 인증 결과 응답 처리
   useEffect(() => {
     if (response?.type === 'success') {
-      const { authentication } = response;
+      const { authentication, params } = response;
       
-      console.log('🔍 Auth Response:', authentication);
+      console.log('🔍 Full Auth Response Options:', response);
+      console.log('🔍 Authentication object:', authentication);
+      console.log('🔍 Params:', params);
+      
+      // params.id_token으로 넘어오는 경우도 대비 
+      const finalIdToken = authentication?.idToken || (params && params.id_token);
       
       // ✅ 중요한 변경점: Supabase 연동을 위해서는 accessToken이 아닌 idToken이 필요합니다.
-      if (authentication?.idToken) {
-        handleSignInWithSupabase(authentication.idToken, authentication.accessToken);
+      if (finalIdToken) {
+        handleSignInWithSupabase(finalIdToken, authentication?.accessToken || (params && params.access_token));
       } else {
+        console.error('❌ Google OAuth Success but NO ID TOKEN:', response);
         alert('ID 토큰을 받지 못했습니다. Google Cloud Console에서 클라이언트 ID 설정을 확인해주세요.');
       }
     } else if (response?.type === 'error' || response?.type === 'cancel') {
-       console.log('❌ Auth Error:', response);
+       console.log('❌ Auth Error / Cancel:', response);
     }
   }, [response]);
 
