@@ -41,6 +41,9 @@ export const useAuthStore = create<AuthState>((set) => ({
         } catch (error) {
             console.error('Supabase signOut 에러:', error);
         }
+        // 옷장 데이터도 함께 초기화
+        const { useClosetStore } = require('@/store/closetStore');
+        useClosetStore.getState().clearItems();
         set({
             isLoggedIn: false,
             user: null,
@@ -49,9 +52,13 @@ export const useAuthStore = create<AuthState>((set) => ({
     },
 
     // 내부용: onAuthStateChange에서 세션 없음 감지 시 (signOut 호출 없이 상태만 정리)
-    clearAuth: () => set({
-        isLoggedIn: false,
-        user: null,
-        isLoading: false,
-    }),
+    clearAuth: () => {
+        const { useClosetStore } = require('@/store/closetStore');
+        useClosetStore.getState().clearItems();
+        set({
+            isLoggedIn: false,
+            user: null,
+            isLoading: false,
+        });
+    },
 }));

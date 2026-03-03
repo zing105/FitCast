@@ -44,6 +44,7 @@ interface ClosetState {
     setLastWornOutfit: (ids: string[]) => void;
     saveOutfit: (itemIds: string[], name?: string) => void;
     removeOutfit: (id: string) => void;
+    clearItems: () => void; // 로그아웃 시 옷장 데이터 초기화
 }
 
 // DB 모델을 UI 모델로 변환 (기존 컴포넌트 안 깨지게)
@@ -148,4 +149,11 @@ export const useClosetStore = create<ClosetState>((set, get) => ({
     removeOutfit: (id) => set((state) => ({
         savedOutfits: state.savedOutfits.filter((o) => o.id !== id),
     })),
+
+    // 로그아웃 시 옷장 데이터 전부 초기화
+    clearItems: () => set({
+        items: [],
+        savedOutfits: [],
+        lastWornOutfit: null,
+    }),
 }));
