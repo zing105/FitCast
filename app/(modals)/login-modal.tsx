@@ -6,7 +6,6 @@ import { AnimatedMeshGradient } from '@/components/ui/AnimatedMeshGradient';
 import { Screen } from '@/components/ui/Screen';
 import { primary } from '@/design-tokens';
 import { useAuthStore } from '@/store/authStore';
-import { supabase } from '@/utils/supabase';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as AuthSession from 'expo-auth-session';
 import * as Google from 'expo-auth-session/providers/google';
@@ -45,67 +44,52 @@ export default function LoginModalScreen() {
   
   // Google 인증 요청 훅 설정
   const config = {
-    // 💡 아주 중요한 설정: Supabase는 "누구를 위해 생성된 토큰인가?(aud)"를 엄격히 검사합니다.
-    // Supabase 대시보드에 Web Client ID 하나만 등록했으므로, 
-    // iOS/Android 상관없이 'clientId'는 무조건 Web Client ID로 고정해야 매칭 에러(400)가 안 납니다!
-    clientId: GOOGLE_CLIENT_IDS.web, 
     webClientId: GOOGLE_CLIENT_IDS.web,
-    iosClientId: GOOGLE_CLIENT_IDS.ios, // 네이티브 팝업용이지만, 토큰 자체의 aud는 webClientId를 향해야 함
-    androidClientId: GOOGLE_CLIENT_IDS.web,
+    iosClientId: GOOGLE_CLIENT_IDS.ios, // Native App/Dev Build에서는 Native ID 사용
+    androidClientId: GOOGLE_CLIENT_IDS.web, // Android ID 없으므로 Web으로 유지 (필요시 추가)
     scopes: ['profile', 'email', 'openid'],
-    responseType: 'id_token', // 명시적으로 ID 토큰 요청
     // redirectUri는 플랫폼에 따라 자동 처리되거나 finalRedirectUri 사용
   };
 
-  const [request, response, promptAsync] = Google.useIdTokenAuthRequest(config);
+  const [request, response, promptAsync] = Google.useAuthRequest(config);
 
   // 인증 결과 응답 처리
   useEffect(() => {
     if (response?.type === 'success') {
-      const { authentication, params } = response;
+      const { authentication } = response;
       
-      console.log('🔍 Full Auth Response Options:', response);
-      console.log('🔍 Authentication object:', authentication);
-      console.log('🔍 Params:', params);
+      console.log('🔍 Auth Response:', authentication);
       
-      // params.id_token으로 넘어오는 경우도 대비 
-      const finalIdToken = authentication?.idToken || (params && params.id_token);
-      
-      // ✅ 중요한 변경점: Supabase 연동을 위해서는 accessToken이 아닌 idToken이 필요합니다.
-      if (finalIdToken) {
-        handleSignInWithSupabase(finalIdToken, authentication?.accessToken || (params && params.access_token));
+      if (authentication?.accessToken) {
+        handleSignInWithGoogle(authentication.accessToken);
       } else {
-        console.error('❌ Google OAuth Success but NO ID TOKEN:', response);
-        alert('ID 토큰을 받지 못했습니다. Google Cloud Console에서 클라이언트 ID 설정을 확인해주세요.');
+        alert('인증 토큰을 받지 못했습니다.');
       }
     } else if (response?.type === 'error' || response?.type === 'cancel') {
-       console.log('❌ Auth Error / Cancel:', response);
+       console.log('❌ Auth Error:', response);
     }
   }, [response]);
 
-  // Google ID Token으로 Supabase 세션 생성 및 사용자 정보 가져오기
-  const handleSignInWithSupabase = async (idToken: string, accessToken?: string) => {
+  // Google Access Token으로 사용자 정보 가져오기
+  const handleSignInWithGoogle = async (accessToken: string) => {
     try {
-      console.log('🚀 Authenticating with Supabase using Google ID Token');
+      console.log('🚀 Fetching user info with Google Access Token');
       
-      // 1. Supabase Auth 호출 (가장 중요! RLS 통과를 위한 핵심)
-      const { data, error } = await supabase.auth.signInWithIdToken({
-        provider: 'google',
-        token: idToken,
-        access_token: accessToken, // 선택사항
+      // Access Token으로 사용자 정보 가져오기
+      const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
-
-      if (error) throw error;
       
-      // 2. Zustand Auth Store에 로그인 정보 저장 (기존 로직 유지)
-      if (data.user) {
+      const userInfo = await userInfoResponse.json();
+      
+      if (userInfo &&userInfo.email) {
         login({
-          id: data.user.id, // Supabase가 발급한 UUID 사용
-          email: data.user.email || '',
-          name: data.user.user_metadata?.full_name || 'User',
-          avatar: data.user.user_metadata?.avatar_url || '',
+          id: userInfo.id || 'google-user',
+          email: userInfo.email || '',
+          name: userInfo.name || 'User',
+          avatar: userInfo.picture,
         });
-        console.log('✅ Supabase & Google Login Success:', data.user.email);
+        console.log('✅ Google Login Success:', userInfo);
         router.back();
       } else {
         throw new Error('사용자 정보를 가져올 수 없습니다.');
