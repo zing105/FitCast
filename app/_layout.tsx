@@ -70,6 +70,10 @@ export default function RootLayout() {
           avatar: user.user_metadata?.avatar_url || user.user_metadata?.picture,
         });
         console.log('✅ 세션 활성:', user.email);
+        
+        // 로그인 즉시 옷장 데이터 불러오기 (홈 화면에서도 바로 표시)
+        const { useClosetStore } = require('@/store/closetStore');
+        useClosetStore.getState().fetchItems(user.id);
       } else if (event === 'SIGNED_OUT' || event === 'INITIAL_SESSION') {
         clearAuth();
         if (event === 'INITIAL_SESSION') {
