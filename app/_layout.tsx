@@ -21,10 +21,11 @@ WebBrowser.maybeCompleteAuthSession();
 
 import { useColorScheme } from '@/components/useColorScheme';
 import { useAuthStore } from '@/store/authStore';
+import { supabase } from '@/utils/supabase';
 
 export {
-    // Catch any errors thrown by the Layout component.
-    ErrorBoundary
+  // Catch any errors thrown by the Layout component.
+  ErrorBoundary
 } from 'expo-router';
 
 export const unstable_settings = {
@@ -42,16 +43,42 @@ export default function RootLayout() {
     ...Ionicons.font,
   });
 
-  const restoreSession = useAuthStore((state) => state.restoreSession);
+  const login = useAuthStore((state) => state.login);
+  const clearAuth = useAuthStore((state) => state.clearAuth);
 
   // 폰트 로딩 에러 처리
   useEffect(() => {
     if (error) throw error;
   }, [error]);
 
-  // 앱 시작 시 Supabase 세션 복원 (새로고침 후에도 로그인 유지)
+  // 🔑 Supabase Auth 상태 변화 리스너 (세션 자동 관리의 핵심!)
+  // 이 리스너가 모든 인증 상태를 관리합니다:
+  // - INITIAL_SESSION: 앱 시작/새로고침 시 저장된 세션 복원
+  // - SIGNED_IN: 로그인 성공 시 (OAuth 리다이렉트 포함)
+  // - SIGNED_OUT: 로그아웃 시
+  // - TOKEN_REFRESHED: JWT 토큰 자동 갱신 시
   useEffect(() => {
-    restoreSession();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('🔄 Auth 상태 변화:', event);
+      
+      if (session?.user) {
+        const user = session.user;
+        login({
+          id: user.id,
+          email: user.email || '',
+          name: user.user_metadata?.full_name || user.user_metadata?.name || 'User',
+          avatar: user.user_metadata?.avatar_url || user.user_metadata?.picture,
+        });
+        console.log('✅ 세션 활성:', user.email);
+      } else if (event === 'SIGNED_OUT' || event === 'INITIAL_SESSION') {
+        clearAuth();
+        if (event === 'INITIAL_SESSION') {
+          console.log('ℹ️ 저장된 세션 없음');
+        }
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   // 폰트 로딩 완료 후 스플래시 화면 숨김

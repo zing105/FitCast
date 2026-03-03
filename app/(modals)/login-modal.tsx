@@ -134,10 +134,25 @@ export default function LoginModalScreen() {
     }
   };
 
-  const handleGoogleLogin = () => {
-    // Web 환경에서도 기본 promptAsync 동작을 사용하여 AuthSession이 URL의 결과 메시지를 
-    // 부모 창으로 안전하게 전송할 수 있도록 합니다. 팝업 크기를 강제하면 간혹 origin 통신이 끊어집니다.
-    promptAsync();
+  const handleGoogleLogin = async () => {
+    if (Platform.OS === 'web') {
+      // 🌐 웹에서는 Supabase OAuth 플로우 사용 (세션 자동 관리)
+      // Google 로그인 → 리다이렉트 → 세션 자동 저장 → onAuthStateChange가 감지
+      console.log('🌐 웹: Supabase OAuth 리다이렉트 시작');
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin,
+        },
+      });
+      if (error) {
+        console.error('❌ Supabase OAuth Error:', error);
+        alert(`로그인 오류: ${error.message}`);
+      }
+    } else {
+      // 📱 네이티브에서는 expo-auth-session 사용
+      promptAsync();
+    }
   };
 
   return (
