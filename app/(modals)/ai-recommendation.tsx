@@ -294,7 +294,11 @@ export default function AIRecommendationModal() {
                        
                        <View className="flex-row gap-2">
                           <TouchableOpacity 
-                            onPress={() => Linking.openURL(`https://www.musinsa.com/search/goods?keyword=${encodeURIComponent(promo.searchKeyword)}`)}
+                            onPress={() => {
+                              const genderFilter = answers.gender === '남성' ? 'M' : answers.gender === '여성' ? 'F' : 'A';
+                              const url = `https://www.musinsa.com/search/goods?keyword=${encodeURIComponent(promo.searchKeyword)}&gf=${genderFilter}&keywordType=keyword`;
+                              Linking.openURL(url);
+                            }}
                             className="flex-1 bg-black py-2.5 rounded-xl items-center"
                           >
                              <Text className="text-white text-[11px] font-bold">무신사</Text>
