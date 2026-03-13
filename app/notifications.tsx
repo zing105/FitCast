@@ -78,17 +78,6 @@ export default function NotificationsScreen() {
 
   return (
     <Screen className="bg-white" withPadding={false}>
-      {/* Custom Header */}
-      <View className="px-6 pt-6 pb-4 bg-white flex-row items-center border-b border-neutral-100">
-        <TouchableOpacity 
-          onPress={() => router.back()} 
-          className="mr-4 p-1"
-        >
-          <Ionicons name="arrow-back" size={24} color={neutral[900]} />
-        </TouchableOpacity>
-        <Text className="text-neutral-900 text-title-lg font-bold">알림 센터</Text>
-      </View>
-
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         <View className="py-4">
           {MOCK_NOTIFICATIONS.length > 0 ? (

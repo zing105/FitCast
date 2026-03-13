@@ -6,8 +6,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { View } from 'react-native';
-
-import { AnimatedLogo } from '@/components/ui/AnimatedLogo';
 import { useColorScheme } from '@/components/useColorScheme';
 import { neutral, primary, surface } from '@/design-tokens';
 
@@ -76,7 +74,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: '홈',
-          headerTitle: () => <AnimatedLogo />,
+          headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon 
               name={focused ? 'home' : 'home-outline'} 

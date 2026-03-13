@@ -10,6 +10,7 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
+import { AnimatedLogo } from '@/components/ui/AnimatedLogo';
 import { AnimatedMeshGradient } from '@/components/ui/AnimatedMeshGradient';
 import { WaveEffect } from '@/components/ui/WaveEffect';
 import { useRecommendation } from '@/hooks/useRecommendation';
@@ -92,22 +93,27 @@ export default function HomeScreen() {
       >
         {/* Header Section */}
         <View className="px-6 pt-4 pb-6 bg-transparent">
+          {/* Top Bar: Logo & Bell */}
           <View className="flex-row justify-between items-center mb-6">
-            <View>
-              <Text className="text-neutral-500 text-body-md mb-1">
-                {isLoggedIn ? '오늘도 멋지게,' : '환영합니다,'}
-              </Text>
-              <Text className="text-neutral-900 text-headline-sm font-bold">
-                안녕하세요 {isLoggedIn ? user?.name : '게스트'}님!
-              </Text>
-            </View>
+            <AnimatedLogo />
             <TouchableOpacity 
               onPress={() => router.push('/notifications')}
-              className="w-10 h-10 bg-neutral-100 rounded-full items-center justify-center"
+              className="w-10 h-10 bg-neutral-100 rounded-full items-center justify-center shadow-sm"
             >
               <Ionicons name="notifications-outline" size={20} color={neutral[900]} />
             </TouchableOpacity>
           </View>
+
+          {/* Greeting */}
+          <View>
+            <Text className="text-neutral-500 text-body-md mb-1">
+              {isLoggedIn ? '오늘도 멋지게,' : '환영합니다,'}
+            </Text>
+            <Text className="text-neutral-900 text-headline-sm font-bold">
+              안녕하세요 {isLoggedIn ? user?.name : '게스트'}님!
+            </Text>
+          </View>
+        </View>
 
           {/* Main Card (OOTD Recommendation) */}
           <Animated.View style={animatedCardStyle}>

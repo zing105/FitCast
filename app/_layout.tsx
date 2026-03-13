@@ -139,6 +139,13 @@ function RootLayoutNav() {
               animation: 'fade',
             }} 
           />
+          <Stack.Screen
+            name="notifications"
+            options={{
+              headerTitle: '알림 센터',
+              headerBackTitle: '뒤로',
+            }}
+          />
         </Stack>
       </ThemeProvider>
     </SafeAreaProvider>
