@@ -15,37 +15,72 @@ const { width: screenWidth } = Dimensions.get('window');
 
 import { useAuthStore } from '@/store/authStore';
 import { useClosetStore } from '@/store/closetStore';
+import { analyzeClothImage, ClothAnalysisResponse } from '@/utils/gemini';
 import { uploadClothImage } from '@/utils/supabaseStorage';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-// Mock Analysis Data (나중에 실제 AI로 대체)
-const MOCK_ANALYSIS = {
-  category: 'Top',
-  subCategory: 'T-Shirt',
-  color: 'Navy',
-  pattern: 'Solid',
-  material: 'Cotton 100%',
-  season: ['Spring', 'Summer'],
-};
 
 export default function PreviewScreen() {
   const router = useRouter();
   const { photoUri } = useLocalSearchParams<{ photoUri: string }>();
   
   const addItem = useClosetStore((state) => state.addItem); // Store Action
-  
+
   const [isAnalyzing, setIsAnalyzing] = useState(true);
-  const [analysisResult, setAnalysisResult] = useState<typeof MOCK_ANALYSIS | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<ClothAnalysisResponse | null>(null);
 
-  // AI 분석 시뮬레이션
+  // AI 분석 실행 (Gemini Vision)
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsAnalyzing(false);
-      setAnalysisResult(MOCK_ANALYSIS);
-    }, 2000); // 2초 후 분석 완료
+    let isMounted = true;
 
-    return () => clearTimeout(timer);
-  }, []);
+    async function processImage() {
+      try {
+        let base64Image = '';
+        if (Platform.OS === 'web') {
+          const response = await fetch(photoUri);
+          const blob = await response.blob();
+          base64Image = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve((reader.result as string).split(',')[1]);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+        } else {
+          base64Image = await FileSystem.readAsStringAsync(photoUri, {
+            // @ts-ignore
+            encoding: FileSystem.EncodingType.Base64,
+          });
+        }
+
+        const result = await analyzeClothImage(base64Image as string);
+        if (isMounted) {
+          setAnalysisResult(result);
+          setIsAnalyzing(false);
+        }
+      } catch (error) {
+        console.error('이미지 분석 실패:', error);
+        if (isMounted) {
+          alert('이미지 분석에 실패했습니다. 형식에 맞춰 기본값이 입력됩니다.');
+          setAnalysisResult({
+            category: 'top',
+            sub_category: '알 수 없음',
+            color: '알 수 없음',
+            pattern: '알 수 없음',
+            material: '알 수 없음',
+            season: ['봄', '여름', '가을', '겨울'],
+          });
+          setIsAnalyzing(false);
+        }
+      }
+    }
+
+    if (photoUri) {
+      processImage();
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [photoUri]);
 
   const [isSaving, setIsSaving] = useState(false);
   const { user } = useAuthStore();
@@ -99,7 +134,7 @@ export default function PreviewScreen() {
       await addItem({
         image_url: imageUrl, 
         category: analysisResult.category.toLowerCase(), 
-        sub_category: analysisResult.subCategory,
+        sub_category: analysisResult.sub_category,
         brand: 'Unknown', 
         color: analysisResult.color,
         pattern: analysisResult.pattern,
@@ -179,7 +214,7 @@ export default function PreviewScreen() {
                  <Text className="text-neutral-500 text-label-md font-bold mb-3">카테고리</Text>
                  <View className="flex-row flex-wrap gap-2">
                     <View className="bg-primary-50 border border-primary-100 px-4 py-2 rounded-full">
-                       <Text className="text-primary-700 text-body-sm font-medium">{analysisResult?.subCategory}</Text>
+                       <Text className="text-primary-700 text-body-sm font-medium">{analysisResult?.sub_category}</Text>
                     </View>
                     <View className="bg-neutral-50 border border-neutral-200 px-4 py-2 rounded-full">
                        <Text className="text-neutral-600 text-body-sm">{analysisResult?.category}</Text>
@@ -215,7 +250,7 @@ export default function PreviewScreen() {
                        {analysisResult?.material}
                     </Text>
                     <Text className="text-secondary-700 text-caption">
-                       광택이 없고 짜임이 촘촘한 것으로 보아 면 소재일 확률이 높습니다.
+                       Gemini Vision AI가 이미지를 바탕으로 추론한 결과입니다.
                     </Text>
                  </View>
               </View>

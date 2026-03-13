@@ -72,3 +72,66 @@ export async function getOutfitRecommendation(
     throw new Error('코디 추천을 가져오는 중 오류가 발생했습니다.');
   }
 }
+
+export interface ClothAnalysisResponse {
+  category: 'top' | 'bottom' | 'outer' | 'dress' | 'shoes' | 'accessory' | 'etc';
+  sub_category: string;
+  color: string;
+  pattern: string;
+  material: string;
+  season: string[];
+}
+
+/**
+ * 옷 사진(Base64)을 분석하여 카테고리, 색상, 재질 등의 태그를 자동 추출합니다.
+ */
+export async function analyzeClothImage(base64Image: string): Promise<ClothAnalysisResponse> {
+  if (!process.env.EXPO_PUBLIC_GEMINI_API_KEY) {
+    throw new Error('Gemini API 키가 설정되지 않았습니다.');
+  }
+
+  const model = genAI.getGenerativeModel({
+    model: 'gemini-2.5-flash',
+    generationConfig: {
+      responseMimeType: 'application/json',
+      temperature: 0.2, // 분석의 정확도를 위해 낮게 설정
+    },
+  });
+
+  const prompt = `
+    다음 옷 이미지를 분석해서 JSON 형식으로만 완벽하게 응답해.
+    1. category: "top", "bottom", "outer", "dress", "shoes", "accessory", "etc" 중 가장 알맞은 것 택 1.
+    2. sub_category: (예: 반팔 티셔츠, 청바지, 가디건, 스니커즈 등 한국어로 짧게 명사형으로)
+    3. color: (주요 색상 1~2개 한국어로, 예: 네이비, 화이트)
+    4. pattern: (무지, 스트라이프, 체크, 플로럴, 그래픽, 도트 등 한국어로)
+    5. material: (면, 데님, 니트, 린넨, 가죽, 폴리에스테르, 나일론 등 옷감 재질 한국어로)
+    6. season: ("봄", "여름", "가을", "겨울" 중 해당하는 계절들의 배열 형식)
+
+    결과는 반드시 아래 JSON 키워드를 가진 객체 형식으로만 줘:
+    {
+      "category": "top",
+      "sub_category": "반팔 셔츠",
+      "color": "파란색",
+      "pattern": "스트라이프",
+      "material": "면",
+      "season": ["봄", "여름"]
+    }
+  `;
+
+  try {
+    const result = await model.generateContent([
+      prompt,
+      {
+        inlineData: {
+          data: base64Image,
+          mimeType: 'image/jpeg' // 카메라/갤러리 이미지는 주로 jpeg/png
+        }
+      }
+    ]);
+    const text = result.response.text();
+    return JSON.parse(text) as ClothAnalysisResponse;
+  } catch (error) {
+    console.error('Gemini Vision API 호출 에러:', error);
+    throw new Error('이미지 분석 중 오류가 발생했습니다.');
+  }
+}
