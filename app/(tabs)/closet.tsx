@@ -58,7 +58,13 @@ export default function ClosetScreen() {
   });
 
   const renderItem = ({ item }: { item: UIClothItem }) => (
-    <View className="flex-1 m-1.5 mb-4">
+    <TouchableOpacity 
+      className="flex-1 m-1.5 mb-4"
+      onPress={() => router.push({
+        pathname: '/(modals)/cloth-detail',
+        params: { id: item.id }
+      })}
+    >
       <View className="aspect-[3/4] bg-neutral-100 rounded-2xl mb-2 overflow-hidden items-center justify-center relative">
          {item.image ? (
            <Image source={item.image} className="w-full h-full" resizeMode="cover" />
@@ -73,7 +79,7 @@ export default function ClosetScreen() {
       </View>
       <Text className="text-neutral-900 text-body-sm font-medium truncate" numberOfLines={1}>{item.subCategory || item.category}</Text>
       <Text className="text-neutral-500 text-label-sm truncate" numberOfLines={1}>{item.brand || 'No Brand'}</Text>
-    </View>
+    </TouchableOpacity>
   );
 
   return (

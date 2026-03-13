@@ -40,6 +40,7 @@ interface ClosetState {
     // 비동기 액션
     fetchItems: (userId: string) => Promise<void>;
     addItem: (itemData: Omit<ClothItem, 'id' | 'created_at' | 'user_id'>, userId: string) => Promise<void>;
+    updateItem: (id: string, itemData: Partial<Omit<ClothItem, 'id' | 'created_at' | 'user_id'>>, userId: string) => Promise<void>;
     removeItem: (id: string, userId: string) => Promise<void>;
     setLastWornOutfit: (ids: string[]) => void;
     saveOutfit: (itemIds: string[], name?: string) => void;
@@ -104,6 +105,28 @@ export const useClosetStore = create<ClosetState>((set, get) => ({
 
         } catch (error) {
             console.error('옷 저장 실패:', error);
+            throw error;
+        } finally {
+            set({ isLoading: false });
+        }
+    },
+
+    // 옷 정보 수정 (DB UPDATE)
+    updateItem: async (id, itemData, userId) => {
+        set({ isLoading: true });
+        try {
+            const { error } = await supabase
+                .from('clothes')
+                .update(itemData)
+                .eq('id', id)
+                .eq('user_id', userId);
+
+            if (error) throw error;
+
+            // 수정 후 내 옷장 최신화
+            await get().fetchItems(userId);
+        } catch (error) {
+            console.error('옷 정보 수정 실패:', error);
             throw error;
         } finally {
             set({ isLoading: false });
