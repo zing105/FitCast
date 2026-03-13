@@ -113,7 +113,6 @@ export default function HomeScreen() {
               안녕하세요 {isLoggedIn ? user?.name : '게스트'}님!
             </Text>
           </View>
-        </View>
 
           {/* Main Card (OOTD Recommendation) */}
           <Animated.View style={animatedCardStyle}>
