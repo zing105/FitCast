@@ -10,7 +10,7 @@ import { useClosetStore } from '@/store/closetStore';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, Dimensions, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Dimensions, Image, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -63,25 +63,39 @@ export default function ClothDetailModal() {
 
   const handleDelete = () => {
     if (!user) return;
-    Alert.alert(
-      '정말 삭제할까요?',
-      '삭제된 옷은 다시 복구할 수 없습니다.',
-      [
-        { text: '취소', style: 'cancel' },
-        { 
-          text: '삭제', 
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await removeItem(item.id, user.id);
-              router.back();
-            } catch (error) {
-              Alert.alert('오류', '삭제 중 문제가 발생했습니다.');
-            }
-          }
+
+    const performDelete = async () => {
+      try {
+        await removeItem(item.id, user.id);
+        router.back();
+      } catch (error) {
+        if (Platform.OS === 'web') {
+          window.alert('삭제 중 문제가 발생했습니다.');
+        } else {
+          Alert.alert('오류', '삭제 중 문제가 발생했습니다.');
         }
-      ]
-    );
+      }
+    };
+
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm('정말 삭제할까요?\n삭제된 옷은 다시 복구할 수 없습니다.');
+      if (confirmed) {
+        performDelete();
+      }
+    } else {
+      Alert.alert(
+        '정말 삭제할까요?',
+        '삭제된 옷은 다시 복구할 수 없습니다.',
+        [
+          { text: '취소', style: 'cancel' },
+          { 
+            text: '삭제', 
+            style: 'destructive',
+            onPress: performDelete
+          }
+        ]
+      );
+    }
   };
 
   return (
@@ -104,7 +118,7 @@ export default function ClothDetailModal() {
           {!isEditing && (
             <TouchableOpacity 
               onPress={handleDelete}
-              className="absolute top-12 right-4 bg-red-500/80 p-2 rounded-full"
+              className="absolute top-12 right-4 bg-red-500/80 p-2 rounded-full z-50 active:opacity-70 shadow-lg"
             >
                <Ionicons name="trash-outline" size={24} color="white" />
             </TouchableOpacity>
