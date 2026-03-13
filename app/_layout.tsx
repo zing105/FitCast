@@ -9,9 +9,10 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import * as WebBrowser from 'expo-web-browser';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { AnimatedSplashScreen } from '@/components/AnimatedSplashScreen';
 
 // NativeWind 글로벌 CSS 임포트
 import '../global.css';
@@ -42,6 +43,8 @@ export default function RootLayout() {
     ...FontAwesome.font,
     ...Ionicons.font,
   });
+
+  const [isSplashFinished, setIsSplashFinished] = useState(false);
 
   const login = useAuthStore((state) => state.login);
   const clearAuth = useAuthStore((state) => state.clearAuth);
@@ -96,7 +99,14 @@ export default function RootLayout() {
     return null;
   }
 
-  return <RootLayoutNav />;
+  return (
+    <>
+      <RootLayoutNav />
+      {!isSplashFinished && (
+        <AnimatedSplashScreen onAnimationFinish={() => setIsSplashFinished(true)} />
+      )}
+    </>
+  );
 }
 
 function RootLayoutNav() {
