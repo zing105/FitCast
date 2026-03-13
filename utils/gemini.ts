@@ -4,9 +4,16 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 // Initialize the Gemini API client
 const genAI = new GoogleGenerativeAI(process.env.EXPO_PUBLIC_GEMINI_API_KEY || '');
 
-interface OutfitRecommendationResponse {
+export interface SuggestedPurchase {
+  item: string;
+  reason: string;
+  searchKeyword: string;
+}
+
+export interface OutfitRecommendationResponse {
   message: string;
-  outfitIds: string[];
+  outfitIds?: string[];
+  suggestedPurchases?: SuggestedPurchase[];
 }
 
 /**
@@ -52,14 +59,30 @@ export async function getOutfitRecommendation(
     ${JSON.stringify(simplifiedCloset, null, 2)}
 
     고객의 상황과 옷장 목록을 분석해서, 오늘 입기 딱 좋은 가장 세련되고 감각적인 코디 조합(아우터 0~1개, 상의 1개, 하의 1개)을 골라줘.
-    옷장에 상의나 하의 등 필수 아이템이 부족하다면, 가지고 있는 것들로 최대한 엣지있게 조합해.
-    같은 카테고리(예: 상의 2개)를 중복해서 고르지 마.
-    옷장에 없는 아이템 ID를 만들어내지 마. 무조건 제공된 목록의 'id' 값만 사용해.
 
-    반드시 아래 JSON 스키마 형식으로 응답해줘:
+    [주의사항]
+    1. 만약 고객의 옷장이 비어있거나, 지금 상황에 어울리는 적절한 조합을 옷장에서 도저히 찾을 수 없을 경우에는 억지로 맞추지 마.
+    2. 옷장에서 찾지 못했다면 대신 'suggestedPurchases' 필드를 사용해서 고객에게 추천할 만한 2~3가지 핵심 아이템을 제안해줘.
+    3. 옷장에 있는 아이템을 쓸 때는 무조건 제공된 목록의 'id' 값만 사용해. 존재하지 않는 ID를 지어내지 마.
+
+    반드시 아래 JSON 스키마 형식 중 하나로 응답해줘:
+    
+    매칭이 성공했을 때:
     {
-      "message": "세련되고 우아한 어투로 고객에게 건네는 스타일링 코멘트. 투박하거나 기계적인 방식이 아닌, 고급스럽고 트렌디한 잡지 언어로 기분/일정에 맞춰서 2~3문장 작성해.",
-      "outfitIds": ["추천하는 옷의 id 배열"]
+      "message": "세련된 에디터 말투로 코디 추천 이유 2~3문장",
+      "outfitIds": ["아이템1_id", "아이템2_id"]
+    }
+
+    매칭 실패하여 쇼핑을 추천할 때:
+    {
+      "message": "옷장 아이템으로는 부족하지만, 이런 아이템을 매칭하면 완벽할 것 같아 제안하는 메시지",
+      "suggestedPurchases": [
+        { 
+          "item": "아이템 이름", 
+          "reason": "추천 이유", 
+          "searchKeyword": "쇼핑몰 검색에 사용할 정확한 키워드 (예: 남자 오버핏 셔츠 블루)" 
+        }
+      ]
     }
   `;
 

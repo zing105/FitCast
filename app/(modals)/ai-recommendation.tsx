@@ -11,7 +11,9 @@ import { getOutfitRecommendation } from '@/utils/gemini';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import * as Linking from 'expo-linking';
+import { OutfitRecommendationResponse, SuggestedPurchase } from '@/utils/gemini';
 
 type Step = 'mood' | 'color' | 'schedule' | 'loading' | 'result';
 
@@ -44,7 +46,7 @@ export default function AIRecommendationModal() {
 
   const [step, setStep] = useState<Step>('mood');
   const [answers, setAnswers] = useState({ mood: '', color: '', schedule: '' });
-  const [aiResult, setAiResult] = useState<{ message: string; outfitItems: UIClothItem[] } | null>(null);
+  const [aiResult, setAiResult] = useState<OutfitRecommendationResponse & { outfitItems: UIClothItem[] } | null>(null);
 
   const handleSelect = (category: keyof typeof answers, value: string) => {
     setAnswers((prev) => ({ ...prev, [category]: value }));
@@ -60,7 +62,7 @@ export default function AIRecommendationModal() {
     try {
       if (items.length === 0) throw new Error('옷장에 옷이 없습니다.');
       
-      const { message, outfitIds } = await getOutfitRecommendation(
+      const result = await getOutfitRecommendation(
         items,
         finalAnswers.mood,
         finalAnswers.color,
@@ -68,11 +70,11 @@ export default function AIRecommendationModal() {
       );
 
       // AI가 준 ID를 기반으로 실제 옷 객체 찾기
-      const matchedItems = outfitIds
+      const matchedItems = (result.outfitIds || [])
         .map(id => items.find(item => item.id.toString() === id.toString()))
         .filter(Boolean) as UIClothItem[];
 
-      setAiResult({ message, outfitItems: matchedItems });
+      setAiResult({ ...result, outfitItems: matchedItems });
       setStep('result');
     } catch (error) {
       console.error(error);
@@ -215,28 +217,75 @@ export default function AIRecommendationModal() {
               </Text>
             </View>
 
-            <Text className="text-neutral-900 font-bold text-title-md mb-4 px-2">오늘의 추천 매칭</Text>
-            <View className="gap-4 mb-10">
-              {aiResult.outfitItems.map((item) => (
-                <View key={item.id} className="bg-white p-4 rounded-3xl border border-neutral-100 flex-row items-center shadow-sm">
-                  <View className="w-24 h-28 bg-neutral-50 rounded-2xl overflow-hidden mr-5 border border-neutral-100">
-                    <Image source={typeof item.image === 'string' ? { uri: item.image } : item.image} className="w-full h-full" resizeMode="cover" />
-                  </View>
-                  <View className="flex-1 justify-center">
-                    <View className="bg-primary-50 self-start px-2.5 py-1 rounded-md mb-2">
-                       <Text className="text-primary-600 text-[10px] font-bold tracking-widest uppercase">{item.category}</Text>
+            {/* Case A: Closet Match Found */}
+            {aiResult.outfitItems.length > 0 && (
+              <>
+                <Text className="text-neutral-900 font-bold text-title-md mb-4 px-2">오늘의 추천 매칭</Text>
+                <View className="gap-4 mb-10">
+                  {aiResult.outfitItems.map((item) => (
+                    <View key={item.id} className="bg-white p-4 rounded-3xl border border-neutral-100 flex-row items-center shadow-sm">
+                      <View className="w-24 h-28 bg-neutral-50 rounded-2xl overflow-hidden mr-5 border border-neutral-100">
+                        <Image source={typeof item.image === 'string' ? { uri: item.image } : item.image} className="w-full h-full" resizeMode="cover" />
+                      </View>
+                      <View className="flex-1 justify-center">
+                        <View className="bg-primary-50 self-start px-2.5 py-1 rounded-md mb-2">
+                           <Text className="text-primary-600 text-[10px] font-bold tracking-widest uppercase">{item.category}</Text>
+                        </View>
+                        <Text className="text-neutral-900 text-title-sm font-bold mb-1">{item.subCategory || '의류 아이템'}</Text>
+                        <View className="flex-row items-center">
+                           <View className="w-3 h-3 rounded-full bg-neutral-200 mr-1.5" />
+                           <Text className="text-neutral-500 text-body-sm">{item.color || '컬러 미지정'}</Text>
+                        </View>
+                      </View>
                     </View>
-                    <Text className="text-neutral-900 text-title-sm font-bold mb-1">{item.subCategory || '의류 아이템'}</Text>
-                    <View className="flex-row items-center">
-                       <View className="w-3 h-3 rounded-full bg-neutral-200 mr-1.5" />
-                       <Text className="text-neutral-500 text-body-sm">{item.color || '컬러 미지정'}</Text>
-                    </View>
-                  </View>
+                  ))}
                 </View>
-              ))}
-            </View>
+                <Button title="이 코디로 확정하기 ✨" variant="primary" size="lg" onPress={handleConfirmOutfit} className="shadow-lg" />
+              </>
+            )}
 
-            <Button title="이 코디로 확정하기 ✨" variant="primary" size="lg" onPress={handleConfirmOutfit} className="shadow-lg" />
+            {/* Case B: Shopping Suggestions (Fallback) */}
+            {aiResult.suggestedPurchases && aiResult.suggestedPurchases.length > 0 && (
+              <>
+                <View className="flex-row items-center mb-4 px-2">
+                   <Ionicons name="cart" size={20} color={primary[500]} />
+                   <Text className="text-neutral-900 font-bold text-title-md ml-2">스타일리스트의 쇼핑 제안</Text>
+                </View>
+                <View className="gap-4 mb-10">
+                  {aiResult.suggestedPurchases.map((promo, idx) => (
+                    <View key={idx} className="bg-white p-5 rounded-3xl border border-neutral-100 shadow-sm">
+                       <View className="bg-secondary-50 self-start px-2 py-1 rounded-md mb-3">
+                          <Text className="text-secondary-600 text-[10px] font-bold">WISH ITEM</Text>
+                       </View>
+                       <Text className="text-neutral-900 text-title-sm font-bold mb-1">{promo.item}</Text>
+                       <Text className="text-neutral-500 text-body-sm mb-4 leading-5">{promo.reason}</Text>
+                       
+                       <View className="flex-row gap-2">
+                          <TouchableOpacity 
+                            onPress={() => Linking.openURL(`https://www.musinsa.com/search/?q=${encodeURIComponent(promo.searchKeyword)}`)}
+                            className="flex-1 bg-black py-2.5 rounded-xl items-center"
+                          >
+                             <Text className="text-white text-[11px] font-bold">무신사</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity 
+                            onPress={() => Linking.openURL(`https://search.shopping.naver.com/search/all?query=${encodeURIComponent(promo.searchKeyword)}`)}
+                            className="flex-1 bg-[#03C75A] py-2.5 rounded-xl items-center"
+                          >
+                             <Text className="text-white text-[11px] font-bold">네이버</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity 
+                            onPress={() => Linking.openURL(`https://zigzag.kr/search?keyword=${encodeURIComponent(promo.searchKeyword)}`)}
+                            className="flex-1 bg-[#ff4b7e] py-2.5 rounded-xl items-center"
+                          >
+                             <Text className="text-white text-[11px] font-bold">지그재그</Text>
+                          </TouchableOpacity>
+                       </View>
+                    </View>
+                  ))}
+                </View>
+              </>
+            )}
+
             <Button title="다시 추천받기" variant="secondary" size="md" onPress={() => setStep('mood')} className="mt-3" />
           </View>
         )}
