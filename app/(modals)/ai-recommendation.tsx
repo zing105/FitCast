@@ -205,22 +205,32 @@ export default function AIRecommendationModal() {
               </View>
             </View>
 
-            <View className="bg-white/80 p-6 rounded-3xl border border-white mb-6 shadow-sm">
-              <Text className="text-neutral-900 text-title-lg font-bold leading-8">
-                {aiResult.message}
+            <View className="bg-white p-7 rounded-[32px] border border-neutral-100 mb-8 shadow-sm">
+              <View className="flex-row items-center mb-4">
+                <Ionicons name="chatbubbles" size={20} color={primary[400]} />
+                <Text className="text-neutral-500 font-bold ml-2">스타일리스트 코멘트</Text>
+              </View>
+              <Text className="text-neutral-800 text-body-xl font-medium leading-8 tracking-tight">
+                "{aiResult.message}"
               </Text>
             </View>
 
-            <View className="gap-4 mb-8">
+            <Text className="text-neutral-900 font-bold text-title-md mb-4 px-2">오늘의 추천 매칭</Text>
+            <View className="gap-4 mb-10">
               {aiResult.outfitItems.map((item) => (
-                <View key={item.id} className="bg-white p-4 rounded-2xl border border-neutral-100 flex-row items-center shadow-sm">
-                  <View className="w-20 h-24 bg-neutral-100 rounded-xl overflow-hidden mr-4">
+                <View key={item.id} className="bg-white p-4 rounded-3xl border border-neutral-100 flex-row items-center shadow-sm">
+                  <View className="w-24 h-28 bg-neutral-50 rounded-2xl overflow-hidden mr-5 border border-neutral-100">
                     <Image source={typeof item.image === 'string' ? { uri: item.image } : item.image} className="w-full h-full" resizeMode="cover" />
                   </View>
-                  <View className="flex-1">
-                    <Text className="text-primary-500 text-label-sm font-bold mb-1">{item.category}</Text>
-                    <Text className="text-neutral-900 text-body-lg font-bold">{item.subCategory || '의류 아이템'}</Text>
-                    <Text className="text-neutral-500 mt-1">{item.color || '컬러 미지정'}</Text>
+                  <View className="flex-1 justify-center">
+                    <View className="bg-primary-50 self-start px-2.5 py-1 rounded-md mb-2">
+                       <Text className="text-primary-600 text-[10px] font-bold tracking-widest uppercase">{item.category}</Text>
+                    </View>
+                    <Text className="text-neutral-900 text-title-sm font-bold mb-1">{item.subCategory || '의류 아이템'}</Text>
+                    <View className="flex-row items-center">
+                       <View className="w-3 h-3 rounded-full bg-neutral-200 mr-1.5" />
+                       <Text className="text-neutral-500 text-body-sm">{item.color || '컬러 미지정'}</Text>
+                    </View>
                   </View>
                 </View>
               ))}
