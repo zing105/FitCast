@@ -21,6 +21,7 @@ export interface OutfitRecommendationResponse {
  */
 export async function getOutfitRecommendation(
   closetItems: UIClothItem[],
+  gender: string,
   mood: string,
   colorTone: string,
   schedule: string
@@ -51,6 +52,7 @@ export async function getOutfitRecommendation(
     너는 하이엔드 패션 매거진의 수석 에디터이자 VIP 프라이빗 스타일리스트야.
     
     [고객 상황]
+    성별: "${gender}"
     기분: "${mood}"
     선호 컬러: "${colorTone}"
     오늘의 스케줄: "${schedule}"
@@ -58,12 +60,13 @@ export async function getOutfitRecommendation(
     [고객의 옷장 데이터베이스]
     ${JSON.stringify(simplifiedCloset, null, 2)}
 
-    고객의 상황과 옷장 목록을 분석해서, 오늘 입기 딱 좋은 가장 세련되고 감각적인 코디 조합(아우터 0~1개, 상의 1개, 하의 1개)을 골라줘.
+    고객의 성별과 상황, 옷장 목록을 분석해서 오늘 입기 딱 좋은 가장 세련되고 감각적인 코디 조합(아우터 0~1개, 상의 1개, 하의 1개)을 골라줘.
 
     [주의사항]
-    1. 만약 고객의 옷장이 비어있거나, 지금 상황에 어울리는 적절한 조합을 옷장에서 도저히 찾을 수 없을 경우에는 억지로 맞추지 마.
-    2. 옷장에서 찾지 못했다면 대신 'suggestedPurchases' 필드를 사용해서 고객에게 추천할 만한 2~3가지 핵심 아이템을 제안해줘.
-    3. 옷장에 있는 아이템을 쓸 때는 무조건 제공된 목록의 'id' 값만 사용해. 존재하지 않는 ID를 지어내지 마.
+    1. 반드시 선택된 성별("${gender}")에 어울리는 스타일링을 제안해.
+    2. 만약 고객의 옷장이 비어있거나, 지금 상황에 어울리는 적절한 조합을 옷장에서 도저히 찾을 수 없을 경우에는 억지로 맞추지 마.
+    3. 옷장에서 찾지 못했다면 대신 'suggestedPurchases' 필드를 사용해서 고객의 성별에 맞는 추천할 만한 2~3가지 핵심 아이템을 제안해줘.
+    4. 옷장에 있는 아이템을 쓸 때는 무조건 제공된 목록의 'id' 값만 사용해. 존재하지 않는 ID를 지어내지 마.
 
     반드시 아래 JSON 스키마 형식 중 하나로 응답해줘:
     
@@ -80,7 +83,7 @@ export async function getOutfitRecommendation(
         { 
           "item": "아이템 이름", 
           "reason": "추천 이유", 
-          "searchKeyword": "쇼핑몰 검색에 사용할 정확한 키워드 (예: 남자 오버핏 셔츠 블루)" 
+          "searchKeyword": "쇼핑몰 검색에 사용할 정확한 성별이 포함된 키워드 (예: ${gender === '남성' ? '남성용 블랙 슬랙스' : '여성용 트위드 자켓'})" 
         }
       ]
     }

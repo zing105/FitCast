@@ -15,7 +15,12 @@ import { ActivityIndicator, Image, Platform, ScrollView, Text, TouchableOpacity,
 import * as Linking from 'expo-linking';
 import { OutfitRecommendationResponse, SuggestedPurchase } from '@/utils/gemini';
 
-type Step = 'mood' | 'color' | 'schedule' | 'loading' | 'result';
+type Step = 'gender' | 'mood' | 'color' | 'schedule' | 'loading' | 'result';
+
+const GENDERS = [
+  { id: '남성', icon: 'man', label: '남성' },
+  { id: '여성', icon: 'woman', label: '여성' },
+];
 
 const MOODS = [
   { id: '차분함', icon: 'cafe', label: '차분함' },
@@ -44,15 +49,16 @@ export default function AIRecommendationModal() {
   const addOutfit = useClosetStore((state) => state.saveOutfit);
   const setLastWorn = useClosetStore((state) => state.setLastWornOutfit);
 
-  const [step, setStep] = useState<Step>('mood');
-  const [answers, setAnswers] = useState({ mood: '', color: '', schedule: '' });
+  const [step, setStep] = useState<Step>('gender');
+  const [answers, setAnswers] = useState({ gender: '', mood: '', color: '', schedule: '' });
   const [aiResult, setAiResult] = useState<OutfitRecommendationResponse & { outfitItems: UIClothItem[] } | null>(null);
 
   const handleSelect = (category: keyof typeof answers, value: string) => {
     setAnswers((prev) => ({ ...prev, [category]: value }));
     
     // 다음 스텝으로 자동 복귀
-    if (category === 'mood') setStep('color');
+    if (category === 'gender') setStep('mood');
+    else if (category === 'mood') setStep('color');
     else if (category === 'color') setStep('schedule');
     else if (category === 'schedule') generateRecommendation({ ...answers, schedule: value });
   };
@@ -64,6 +70,7 @@ export default function AIRecommendationModal() {
       
       const result = await getOutfitRecommendation(
         items,
+        finalAnswers.gender,
         finalAnswers.mood,
         finalAnswers.color,
         finalAnswers.schedule
@@ -97,6 +104,7 @@ export default function AIRecommendationModal() {
         <Ionicons name="close" size={24} color={neutral[900]} />
       </TouchableOpacity>
       <View className="flex-row gap-2">
+        <View className={`w-2 h-2 rounded-full ${step === 'gender' ? 'bg-primary-500' : 'bg-neutral-200'}`} />
         <View className={`w-2 h-2 rounded-full ${step === 'mood' ? 'bg-primary-500' : 'bg-neutral-200'}`} />
         <View className={`w-2 h-2 rounded-full ${step === 'color' ? 'bg-primary-500' : 'bg-neutral-200'}`} />
         <View className={`w-2 h-2 rounded-full ${step === 'schedule' ? 'bg-primary-500' : 'bg-neutral-200'}`} />
@@ -111,6 +119,30 @@ export default function AIRecommendationModal() {
       {step !== 'loading' && step !== 'result' && renderHeader()}
 
       <ScrollView className="flex-1 px-6 pb-12" showsVerticalScrollIndicator={false}>
+        {/* Step 0: Gender */}
+        {step === 'gender' && (
+          <View className="flex-1 justify-center mt-10">
+            <Text className="text-primary-600 font-bold mb-2">START</Text>
+            <Text className="text-headline-sm font-bold text-neutral-900 mb-8">
+              찾으시는 코디의{'\n'}성별을 선택해주세요.
+            </Text>
+            <View className="flex-row flex-wrap gap-4">
+              {GENDERS.map((g) => (
+                <TouchableOpacity
+                  key={g.id}
+                  onPress={() => handleSelect('gender', g.id)}
+                  className="w-[47%] bg-white p-8 rounded-3xl border border-neutral-100 items-center justify-center shadow-sm"
+                >
+                  <View className="w-16 h-16 bg-primary-50 rounded-full items-center justify-center mb-4">
+                    <Ionicons name={g.icon as any} size={32} color={primary[500]} />
+                  </View>
+                  <Text className="text-neutral-900 font-bold text-lg mt-2">{g.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        )}
+
         {/* Step 1: Mood */}
         {step === 'mood' && (
           <View className="flex-1 justify-center mt-10">
