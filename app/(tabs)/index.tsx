@@ -17,13 +17,13 @@ import { useRecommendation } from '@/hooks/useRecommendation';
 import { useAuthStore } from '@/store/authStore';
 import { useClosetStore } from '@/store/closetStore';
 import Animated, {
-    Easing,
-    useAnimatedStyle,
-    useSharedValue,
-    withDelay,
-    withSequence,
-    withSpring,
-    withTiming
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withSequence,
+  withSpring,
+  withTiming
 } from 'react-native-reanimated';
 
 const WEATHER_ICONS: Record<string, any> = {
@@ -109,7 +109,7 @@ export default function HomeScreen() {
             <Text className="text-neutral-500 text-body-md mb-1">
               {isLoggedIn ? '오늘도 멋지게,' : '환영합니다,'}
             </Text>
-            <Text className="text-neutral-900 text-headline-sm font-bold">
+            <Text className="text-neutral-900 text-headline-sm font-bold mb-3">
               안녕하세요 {isLoggedIn ? user?.name : '게스트'}님!
             </Text>
           </View>

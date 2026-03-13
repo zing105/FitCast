@@ -3,6 +3,7 @@
  * 날씨 정보(Mock)를 가져오고, 그에 맞는 옷차림을 추천하는 커스텀 훅
  */
 import { ClothItem, useClosetStore } from '@/store/closetStore';
+import * as Location from 'expo-location';
 import { useEffect, useMemo, useState } from 'react';
 
 interface WeatherInfo {
@@ -28,19 +29,75 @@ export function useRecommendation() {
     const [weather, setWeather] = useState<WeatherInfo | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    // 1. 날씨 정보 가져오기 (Mock)
+    // 1. 날씨 정보 가져오기 (OpenWeatherMap API 연동)
     useEffect(() => {
-        // 실제로는 API 호출이 들어갈 자리
-        const timer = setTimeout(() => {
-            setWeather({
-                temp: 18,
-                condition: 'Sunny',
-                location: 'Seoul',
-            });
-            setIsLoading(false);
-        }, 1000);
+        let isMounted = true;
 
-        return () => clearTimeout(timer);
+        async function fetchWeather() {
+            try {
+                // 1. 위치 권한 요청
+                const { status } = await Location.requestForegroundPermissionsAsync();
+                if (status !== 'granted') {
+                    console.log('위치 권한이 거부되었습니다. 기본 날씨를 사용합니다.');
+                    throw new Error('Permission denied');
+                }
+
+                // 2. 현재 위치 가져오기
+                const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+                const { latitude, longitude } = location.coords;
+
+                // 3. OpenWeatherMap API 호출
+                const apiKey = process.env.EXPO_PUBLIC_WEATHER_API_KEY;
+                if (!apiKey) {
+                    console.warn('OpenWeatherMap API 키가 없습니다. 기본 날씨를 사용합니다.');
+                    throw new Error('No API Key');
+                }
+
+                const response = await fetch(
+                    `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${apiKey}&units=metric`
+                );
+                
+                if (!response.ok) {
+                    throw new Error('Weather API request failed');
+                }
+
+                const data = await response.json();
+
+                // 4. 데이터 가공
+                const temp = Math.round(data.main.temp);
+                const conditionCode = data.weather[0].main; // e.g., 'Clear', 'Clouds', 'Rain', 'Snow'
+                const cityName = data.name || '현재 위치';
+
+                let condition: WeatherInfo['condition'] = 'Sunny';
+                if (conditionCode === 'Clouds') condition = 'Cloudy';
+                else if (conditionCode === 'Rain' || conditionCode === 'Drizzle' || conditionCode === 'Thunderstorm') condition = 'Rainy';
+                else if (conditionCode === 'Snow') condition = 'Snowy';
+                else if (conditionCode === 'Clear') condition = 'Sunny';
+
+                if (isMounted) {
+                    setWeather({ temp, condition, location: cityName });
+                    setIsLoading(false);
+                }
+
+            } catch (error) {
+                console.log('날씨 정보 업데이트 실패, 기본 Mock 데이터를 사용합니다:', error);
+                if (isMounted) {
+                    // 권한 거부, 네트워크 에러 등의 경우 Fallback (기존 Mock 데이터)
+                    setWeather({
+                        temp: 18,
+                        condition: 'Sunny',
+                        location: 'Seoul',
+                    });
+                    setIsLoading(false);
+                }
+            }
+        }
+
+        fetchWeather();
+
+        return () => {
+            isMounted = false;
+        };
     }, []);
 
     // 2. 추천 로직 실행
