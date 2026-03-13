@@ -305,7 +305,10 @@ export default function HomeScreen() {
                  <Text className="text-white text-title-md font-bold mb-1">코디 고민 해결!</Text>
                  <Text className="text-neutral-400 text-body-sm">AI에게 오늘의 옷 추천받기</Text>
               </View>
-              <TouchableOpacity className="bg-white px-4 py-2 rounded-lg">
+              <TouchableOpacity 
+                onPress={() => router.push('/(modals)/ai-recommendation' as any)}
+                className="bg-white px-4 py-2 rounded-lg"
+              >
                  <Text className="text-neutral-900 text-label-md font-bold">Start AI</Text>
               </TouchableOpacity>
            </View>

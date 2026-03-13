@@ -146,6 +146,13 @@ function RootLayoutNav() {
               headerBackTitle: '뒤로',
             }}
           />
+          <Stack.Screen
+            name="(modals)/ai-recommendation"
+            options={{
+              headerShown: false,
+              presentation: 'modal',
+            }}
+          />
         </Stack>
       </ThemeProvider>
     </SafeAreaProvider>
