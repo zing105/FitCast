@@ -98,9 +98,11 @@ export default function HomeScreen() {
             <AnimatedLogo />
             <TouchableOpacity 
               onPress={() => router.push('/notifications')}
-              className="w-10 h-10 bg-neutral-100 rounded-full items-center justify-center shadow-sm"
+              className="w-10 h-10 bg-white rounded-full items-center justify-center shadow-sm border border-neutral-100 relative"
             >
-              <Ionicons name="notifications-outline" size={20} color={neutral[900]} />
+              <Ionicons name="notifications-outline" size={22} color={neutral[800]} />
+              {/* 새 알림 배지 (현재는 디자인 용 고정값) */}
+              <View className="absolute top-2 right-2 w-2 h-2 bg-primary-500 rounded-full border border-white" />
             </TouchableOpacity>
           </View>
 
