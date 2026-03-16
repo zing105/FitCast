@@ -5,7 +5,7 @@ import { useClosetStore } from '@/store/closetStore';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
-import { Alert, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 export default function ScrapDetailModal() {
   const router = useRouter();
@@ -28,21 +28,39 @@ export default function ScrapDetailModal() {
 
   const handleDelete = () => {
     if (!user) return;
-    Alert.alert(
-      '영감 삭제',
-      '이 스타일 영감을 삭제하시겠습니까?',
-      [
-        { text: '취소', style: 'cancel' },
-        { 
-          text: '삭제', 
-          style: 'destructive', 
-          onPress: async () => {
-             await removeScrap(scrap.id, user.id);
-             router.back();
-          } 
+
+    const performDelete = async () => {
+      try {
+        await removeScrap(scrap.id, user.id);
+        router.back();
+      } catch (error) {
+        if (Platform.OS === 'web') {
+          window.alert('삭제 중 문제가 발생했습니다.');
+        } else {
+          Alert.alert('오류', '삭제 중 문제가 발생했습니다.');
         }
-      ]
-    );
+      }
+    };
+
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm('이 스타일 영감을 삭제하시겠습니까?\n삭제된 영감은 복구할 수 없습니다.');
+      if (confirmed) {
+        performDelete();
+      }
+    } else {
+      Alert.alert(
+        '영감 삭제',
+        '이 스타일 영감을 삭제하시겠습니까?\n삭제된 영감은 복구할 수 없습니다.',
+        [
+          { text: '취소', style: 'cancel' },
+          { 
+            text: '삭제', 
+            style: 'destructive', 
+            onPress: performDelete
+          }
+        ]
+      );
+    }
   };
 
   return (

@@ -219,6 +219,7 @@ export const useClosetStore = create<ClosetState>((set, get) => ({
             }));
         } catch (error) {
             console.error('옷 삭제 실패:', error);
+            throw error;
         }
     },
 
@@ -238,6 +239,7 @@ export const useClosetStore = create<ClosetState>((set, get) => ({
             }));
         } catch (error) {
             console.error('스크랩 삭제 실패:', error);
+            throw error;
         }
     },
 
