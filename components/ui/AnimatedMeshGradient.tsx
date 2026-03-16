@@ -16,10 +16,10 @@ import Animated, {
 const { width, height } = Dimensions.get('window');
 
 const BLOB_COLORS = [
-  'rgba(255, 230, 0, 0.70)',   // Solid Banana Yellow
-  'rgba(45, 156, 219, 0.60)',  // Solid Gemini Blue
-  'rgba(187, 107, 217, 0.50)', // Solid Purple
-  'rgba(39, 174, 96, 0.50)',   // Solid Green
+  'rgba(255, 193, 7, 0.85)',   // Intense Amber/Yellow
+  'rgba(33, 150, 243, 0.75)',  // Intense Azure Blue
+  'rgba(156, 39, 176, 0.65)',  // Intense Deep Purple
+  'rgba(76, 175, 80, 0.65)',   // Intense Emerald Green
 ];
 
 export const AnimatedMeshGradient = () => {
@@ -86,13 +86,13 @@ export const AnimatedMeshGradient = () => {
 
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="none">
-      <View style={[StyleSheet.absoluteFill, { backgroundColor: '#F8FAFC' }]} />
+      <View style={[StyleSheet.absoluteFill, { backgroundColor: '#F1F5F9' }]} />
       
       {/* Blob 1 */}
       <Animated.View 
         style={[
           styles.blob, 
-          { backgroundColor: BLOB_COLORS[0], width: width * 1.2, height: width * 1.2, top: -width * 0.2 },
+          { backgroundColor: BLOB_COLORS[0], width: width * 2.5, height: width * 2.5, top: -width * 0.8 },
           blobStyle1
         ]} 
       />
@@ -101,7 +101,7 @@ export const AnimatedMeshGradient = () => {
       <Animated.View 
         style={[
           styles.blob, 
-          { backgroundColor: BLOB_COLORS[1], width: width * 1.3, height: width * 1.3, top: height * 0.2 },
+          { backgroundColor: BLOB_COLORS[1], width: width * 2.5, height: width * 2.5, top: height * 0.1 },
           blobStyle2
         ]} 
       />
@@ -110,7 +110,7 @@ export const AnimatedMeshGradient = () => {
       <Animated.View 
         style={[
           styles.blob, 
-          { backgroundColor: BLOB_COLORS[2], width: width * 1.1, height: width * 1.1, bottom: -width * 0.1 },
+          { backgroundColor: BLOB_COLORS[2], width: width * 2.2, height: width * 2.2, bottom: -width * 0.4 },
           blobStyle3
         ]} 
       />
@@ -119,12 +119,12 @@ export const AnimatedMeshGradient = () => {
       <Animated.View 
         style={[
           styles.blob, 
-          { backgroundColor: BLOB_COLORS[3], width: width * 1.0, height: width * 1.0, top: height * 0.4 },
+          { backgroundColor: BLOB_COLORS[3], width: width * 2.0, height: width * 2.0, top: height * 0.3 },
           blobStyle4
         ]} 
       />
       
-      {/* No overlay for maximum visibility during testing */}
+      {/* Overlay removed for maximum color exposure */}
       <View style={[StyleSheet.absoluteFill, { backgroundColor: 'transparent' }]} />
     </View>
   );
