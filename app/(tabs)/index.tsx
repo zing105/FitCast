@@ -92,8 +92,9 @@ export default function HomeScreen() {
       <AnimatedMeshGradient />
       <ScrollView 
         className="flex-1" 
+        style={{ backgroundColor: 'transparent' }}
+        contentContainerStyle={{ paddingBottom: 100, backgroundColor: 'transparent' }}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 100 }}
       >
         {/* Header Section */}
         <View className="px-6 pt-4 pb-6 bg-transparent">
