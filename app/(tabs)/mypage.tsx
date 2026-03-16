@@ -25,8 +25,15 @@ export default function MyPageScreen() {
     router.push('/(modals)/login-modal');
   };
   
-  const renderMenuItem = (icon: React.ComponentProps<typeof Ionicons>['name'], label: string, isLast = false, badge?: string) => (
+  const renderMenuItem = (
+    icon: React.ComponentProps<typeof Ionicons>['name'], 
+    label: string, 
+    onPress?: () => void,
+    isLast = false, 
+    badge?: string
+  ) => (
     <TouchableOpacity 
+      onPress={onPress}
       className={`flex-row items-center py-4 px-4 bg-white ${!isLast ? 'border-b border-neutral-100' : ''}`}
     >
       <View className="w-8 h-8 bg-neutral-50 rounded-lg items-center justify-center mr-3">
@@ -77,21 +84,21 @@ export default function MyPageScreen() {
         <View className="mb-6">
             <Text className="px-6 py-2 text-neutral-500 text-label-sm font-semibold mt-4 mb-1">나의 활동</Text>
             <View className="bg-white border-y border-neutral-100">
-                {renderMenuItem("heart-outline", "찜한 코디")}
-                {renderMenuItem("bookmark-outline", "스타일 스크랩", true)}
+                {renderMenuItem("heart-outline", "찜한 코디", () => router.push('/saved-outfits'))}
+                {renderMenuItem("bookmark-outline", "스타일 스크랩", undefined, true)}
             </View>
 
             <Text className="px-6 py-2 text-neutral-500 text-label-sm font-semibold mt-6 mb-1">설정</Text>
             <View className="bg-white border-y border-neutral-100">
-                {renderMenuItem("settings-outline", "앱 설정")}
-                {renderMenuItem("notifications-outline", "알림 설정")}
-                {renderMenuItem("shield-checkmark-outline", "계정 및 보안", true)}
+                {renderMenuItem("settings-outline", "앱 설정", () => router.push('/settings'))}
+                {renderMenuItem("notifications-outline", "알림 설정", () => router.push('/settings'))}
+                {renderMenuItem("shield-checkmark-outline", "계정 및 보안", undefined, true)}
             </View>
 
             <Text className="px-6 py-2 text-neutral-500 text-label-sm font-semibold mt-6 mb-1">지원</Text>
             <View className="bg-white border-y border-neutral-100">
                 {renderMenuItem("help-circle-outline", "도움말")}
-                {renderMenuItem("chatbubble-ellipses-outline", "피드백 보내기", true)}
+                {renderMenuItem("chatbubble-ellipses-outline", "피드백 보내기", () => router.push('/feedback'), true)}
             </View>
         </View>
         
