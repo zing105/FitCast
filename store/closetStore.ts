@@ -9,6 +9,20 @@ export interface Outfit {
     name?: string;
 }
 
+// 스타일 스크랩 타입 정의
+export interface StyleScrap {
+    id: string;
+    image_url: string;
+    description: string | null;
+    tags: string[];
+    created_at?: string;
+}
+
+export interface UIStyleScrap extends Omit<StyleScrap, 'image_url' | 'created_at'> {
+    image: { uri: string };
+    createdAt: number;
+}
+
 // 의류 아이템 타입 정의 (DB 스키마)
 export interface ClothItem {
     id: string;
@@ -34,14 +48,18 @@ export interface UIClothItem extends Omit<ClothItem, 'image_url' | 'sub_category
 interface ClosetState {
     items: UIClothItem[];
     savedOutfits: Outfit[];
+    styleScraps: UIStyleScrap[];
     lastWornOutfit: { ids: string[]; timestamp: number } | null;
     isLoading: boolean;
 
     // 비동기 액션
     fetchItems: (userId: string) => Promise<void>;
+    fetchScraps: (userId: string) => Promise<void>;
     addItem: (itemData: Omit<ClothItem, 'id' | 'created_at' | 'user_id'>, userId: string) => Promise<void>;
+    addScrap: (scrapData: Omit<StyleScrap, 'id' | 'created_at' | 'user_id'>, userId: string) => Promise<void>;
     updateItem: (id: string, itemData: Partial<Omit<ClothItem, 'id' | 'created_at' | 'user_id'>>, userId: string) => Promise<void>;
     removeItem: (id: string, userId: string) => Promise<void>;
+    removeScrap: (id: string, userId: string) => Promise<void>;
     setLastWornOutfit: (ids: string[]) => void;
     saveOutfit: (itemIds: string[], name?: string) => void;
     removeOutfit: (id: string) => void;
@@ -56,9 +74,16 @@ const mapDBToUI = (dbItem: ClothItem): UIClothItem => ({
     createdAt: dbItem.created_at ? new Date(dbItem.created_at).getTime() : Date.now(),
 });
 
+const mapScrapToUI = (dbScrap: StyleScrap): UIStyleScrap => ({
+    ...dbScrap,
+    image: { uri: dbScrap.image_url },
+    createdAt: dbScrap.created_at ? new Date(dbScrap.created_at).getTime() : Date.now(),
+});
+
 export const useClosetStore = create<ClosetState>((set, get) => ({
     items: [],
     savedOutfits: [],
+    styleScraps: [],
     lastWornOutfit: null,
     isLoading: false,
 
@@ -85,6 +110,27 @@ export const useClosetStore = create<ClosetState>((set, get) => ({
         }
     },
 
+    // 스타일 스크랩 불러오기
+    fetchScraps: async (userId: string) => {
+        set({ isLoading: true });
+        try {
+            const { data, error } = await supabase
+                .from('style_scraps')
+                .select('*')
+                .eq('user_id', userId)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            if (data) {
+                set({ styleScraps: data.map(mapScrapToUI) });
+            }
+        } catch (error) {
+            console.error('스크랩 데이터를 불러오는 데 실패했습니다:', error);
+        } finally {
+            set({ isLoading: false });
+        }
+    },
+
     // 🌟 새로운 옷 추가 (DB INSERT) -> 이후 다시 fetch
     addItem: async (itemData, userId) => {
         set({ isLoading: true });
@@ -105,6 +151,29 @@ export const useClosetStore = create<ClosetState>((set, get) => ({
 
         } catch (error) {
             console.error('옷 저장 실패:', error);
+            throw error;
+        } finally {
+            set({ isLoading: false });
+        }
+    },
+
+    // 스타일 스크랩 추가
+    addScrap: async (scrapData, userId) => {
+        set({ isLoading: true });
+        try {
+            const dbPayload = {
+                ...scrapData,
+                user_id: userId,
+            };
+
+            const { error } = await supabase
+                .from('style_scraps')
+                .insert([dbPayload]);
+
+            if (error) throw error;
+            await get().fetchScraps(userId);
+        } catch (error) {
+            console.error('스크랩 저장 실패:', error);
             throw error;
         } finally {
             set({ isLoading: false });
@@ -153,6 +222,25 @@ export const useClosetStore = create<ClosetState>((set, get) => ({
         }
     },
 
+    // 스타일 스크랩 삭제
+    removeScrap: async (id, userId) => {
+        try {
+            const { error } = await supabase
+                .from('style_scraps')
+                .delete()
+                .eq('id', id)
+                .eq('user_id', userId);
+
+            if (error) throw error;
+
+            set((state) => ({
+                styleScraps: state.styleScraps.filter((s) => s.id !== id),
+            }));
+        } catch (error) {
+            console.error('스크랩 삭제 실패:', error);
+        }
+    },
+
     setLastWornOutfit: (ids) => set({
         lastWornOutfit: { ids, timestamp: Date.now() }
     }),
@@ -177,6 +265,7 @@ export const useClosetStore = create<ClosetState>((set, get) => ({
     clearItems: () => set({
         items: [],
         savedOutfits: [],
+        styleScraps: [],
         lastWornOutfit: null,
     }),
 }));

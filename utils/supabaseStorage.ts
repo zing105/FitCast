@@ -36,3 +36,30 @@ export async function uploadClothImage(base64ImageData: string, fileName: string
         throw err;
     }
 }
+
+/**
+ * 스타일 스크랩 이미지 업로드
+ */
+export async function uploadStyleScrapImage(base64ImageData: string, fileName: string): Promise<string> {
+    try {
+        const arrayBuffer = decode(base64ImageData);
+        const { data, error } = await supabase.storage
+            .from('style-scraps')
+            .upload(`scraps/${fileName}`, arrayBuffer, {
+                contentType: 'image/jpeg',
+                upsert: true,
+            });
+
+        if (error) throw error;
+
+        const { data: { publicUrl } } = supabase.storage
+            .from('style-scraps')
+            .getPublicUrl(data.path);
+
+        return publicUrl;
+    } catch (err) {
+        console.error('uploadStyleScrapImage 에러:', err);
+        throw err;
+    }
+}
+

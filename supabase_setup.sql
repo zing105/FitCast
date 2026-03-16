@@ -57,3 +57,28 @@ ON outfits FOR DELETE USING (auth.uid() = user_id);
 
 CREATE POLICY "Users can update their own outfits" 
 ON outfits FOR UPDATE USING (auth.uid() = user_id);
+-- 3. 'style_scraps' (스타일 스크랩) 테이블 생성
+CREATE TABLE style_scraps (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  image_url TEXT NOT NULL,
+  description TEXT,
+  tags TEXT[] DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 보안 규칙(RLS) 활성화
+ALTER TABLE style_scraps ENABLE ROW LEVEL SECURITY;
+
+-- 본인 것만 CRUD 가능하게 설정
+CREATE POLICY "Users can view their own style_scraps" 
+ON style_scraps FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert their own style_scraps" 
+ON style_scraps FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete their own style_scraps" 
+ON style_scraps FOR DELETE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can update their own style_scraps" 
+ON style_scraps FOR UPDATE USING (auth.uid() = user_id);

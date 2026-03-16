@@ -85,7 +85,7 @@ export default function MyPageScreen() {
             <Text className="px-6 py-2 text-neutral-500 text-label-sm font-semibold mt-4 mb-1">나의 활동</Text>
             <View className="bg-white border-y border-neutral-100">
                 {renderMenuItem("heart-outline", "찜한 코디", () => router.push('/saved-outfits'))}
-                {renderMenuItem("bookmark-outline", "스타일 스크랩", undefined, true)}
+                {renderMenuItem("bookmark-outline", "스타일 스크랩", () => router.push('/style-scrap'), true)}
             </View>
 
             <Text className="px-6 py-2 text-neutral-500 text-label-sm font-semibold mt-6 mb-1">설정</Text>

@@ -10,6 +10,11 @@ export interface SuggestedPurchase {
   searchKeyword: string;
 }
 
+export interface StyleScrapAnalysis {
+  tags: string[];
+  description: string;
+}
+
 export interface OutfitRecommendationResponse {
   message: string;
   outfitIds?: string[];
@@ -161,3 +166,55 @@ export async function analyzeClothImage(base64Image: string): Promise<ClothAnaly
     throw new Error('이미지 분석 중 오류가 발생했습니다.');
   }
 }
+
+/**
+ * 이미지(Base64)를 분석하여 스타일 스크랩 태그 및 설명을 생성합니다.
+ */
+export async function analyzeStyleScrap(base64Image: string): Promise<StyleScrapAnalysis> {
+  if (!process.env.EXPO_PUBLIC_GEMINI_API_KEY) {
+    throw new Error('Gemini API 키가 설정되지 않았습니다.');
+  }
+
+  const model = genAI.getGenerativeModel({
+    model: 'gemini-1.5-flash',
+    generationConfig: {
+      responseMimeType: 'application/json',
+      temperature: 0.4,
+    },
+  });
+
+  const prompt = `
+    이 패션 영감 이미지를 분석해서 다음 정보를 JSON 형식으로 제공해줘:
+    1. tags: 3~5개의 스타일 태그 (예: #미니멀, #스트릿, #빈티지, #캐주얼, #포멀 등 한국어로)
+    2. description: 전체적인 스타일에 대한 한 줄 요약 설명 (한국어로)
+
+    응답 형식:
+    {
+      "tags": ["#태그1", "#태그2", ...],
+      "description": "스타일 설명 한 줄"
+    }
+  `;
+
+  try {
+    const result = await model.generateContent([
+      prompt,
+      {
+        inlineData: {
+          data: base64Image,
+          mimeType: 'image/jpeg',
+        },
+      },
+    ]);
+
+    const response = await result.response;
+    const text = response.text();
+    return JSON.parse(text) as StyleScrapAnalysis;
+  } catch (error) {
+    console.error('Style Scrap AI Analysis Error:', error);
+    return {
+      tags: ['#패션', '#영감'],
+      description: 'AI 분석 중 오류가 발생했습니다.'
+    };
+  }
+}
+
