@@ -5,7 +5,7 @@
 import { Screen } from '@/components/ui/Screen';
 import { neutral, primary } from '@/design-tokens';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, Stack } from 'expo-router';
 import React, { useState } from 'react';
 import { ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native';
 
@@ -53,6 +53,9 @@ export default function SettingsScreen() {
 
   return (
     <Screen className="bg-neutral-50" withPadding={false}>
+      {/* Hide default header */}
+      <Stack.Screen options={{ headerShown: false }} />
+
       {/* Custom Header */}
       <View className="px-6 pt-6 pb-4 bg-white flex-row items-center border-b border-neutral-100">
         <TouchableOpacity 

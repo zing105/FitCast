@@ -6,7 +6,7 @@ import { Screen } from '@/components/ui/Screen';
 import { neutral } from '@/design-tokens';
 import { useClosetStore } from '@/store/closetStore';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, Stack } from 'expo-router';
 import React from 'react';
 import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
@@ -22,6 +22,9 @@ export default function SavedOutfitsScreen() {
 
   return (
     <Screen className="bg-white" withPadding={false}>
+      {/* Hide default header */}
+      <Stack.Screen options={{ headerShown: false }} />
+
       {/* Custom Header */}
       <View className="px-6 pt-6 pb-4 bg-white flex-row items-center border-b border-neutral-100">
         <TouchableOpacity 
