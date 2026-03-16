@@ -76,17 +76,7 @@ export default function StyleScrapScreen() {
     }
   };
 
-  const handleDeleteScrap = (id: string) => {
-    if (!user) return;
-    Alert.alert(
-      '삭제 확인',
-      '이 스타일 영감을 삭제하시겠습니까?',
-      [
-        { text: '취소', style: 'cancel' },
-        { text: '삭제', style: 'destructive', onPress: () => removeScrap(id, user.id) }
-      ]
-    );
-  };
+
 
   // 핀터레스트 스타일 그리드를 위한 데이터 분할
   const leftColumn = styleScraps.filter((_, i) => i % 2 === 0);
@@ -96,7 +86,7 @@ export default function StyleScrapScreen() {
     <View key={scrap.id} className="mb-4 bg-white rounded-2xl overflow-hidden shadow-sm border border-neutral-100">
       <TouchableOpacity 
         activeOpacity={0.9}
-        onLongPress={() => handleDeleteScrap(scrap.id)}
+        onPress={() => router.push({ pathname: '/(modals)/scrap-detail' as any, params: { id: scrap.id } })}
       >
         <Image 
           source={scrap.image} 
