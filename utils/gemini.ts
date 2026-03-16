@@ -46,7 +46,7 @@ export async function getOutfitRecommendation(
   }));
 
   const model = genAI.getGenerativeModel({
-    model: 'gemini-2.5-flash',
+    model: 'gemini-1.5-flash',
     generationConfig: {
       responseMimeType: 'application/json', // 강제로 JSON 형태로 응답받기
       temperature: 0.7, // 약간의 창의성 부여
@@ -122,7 +122,7 @@ export async function analyzeClothImage(base64Image: string): Promise<ClothAnaly
   }
 
   const model = genAI.getGenerativeModel({
-    model: 'gemini-2.5-flash',
+    model: 'gemini-1.5-flash',
     generationConfig: {
       responseMimeType: 'application/json',
       temperature: 0.2, // 분석의 정확도를 위해 낮게 설정

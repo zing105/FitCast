@@ -11,7 +11,7 @@ import { analyzeStyleScrap } from '@/utils/gemini';
 import { uploadStyleScrapImage } from '@/utils/supabaseStorage';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { useRouter } from 'expo-router';
+import { useRouter, Stack } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Dimensions, Image, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
@@ -45,17 +45,19 @@ export default function StyleScrapScreen() {
       base64: true,
     });
 
-    if (!result.canceled && result.assets[0].base64) {
+    const asset = result.assets ? result.assets[0] : null;
+    const base64Data = asset?.base64;
+
+    if (!result.canceled && base64Data && asset) {
       try {
         setIsProcessing(true);
-        const asset = result.assets[0];
         
         // 1. Gemini AI 분석
-        const analysis = await analyzeStyleScrap(asset.base64);
+        const analysis = await analyzeStyleScrap(base64Data);
         
         // 2. Storage 업로드
         const fileName = `${user.id}_scrap_${Date.now()}.jpg`;
-        const imageUrl = await uploadStyleScrapImage(asset.base64, fileName);
+        const imageUrl = await uploadStyleScrapImage(base64Data, fileName);
         
         // 3. DB 저장
         await addScrap({
@@ -119,6 +121,7 @@ export default function StyleScrapScreen() {
 
   return (
     <Screen className="bg-neutral-50" withPadding={false}>
+      <Stack.Screen options={{ headerShown: false }} />
       {/* Header */}
       <View className="px-6 pt-6 pb-4 bg-white flex-row items-center justify-between border-b border-neutral-100">
         <View className="flex-row items-center">
