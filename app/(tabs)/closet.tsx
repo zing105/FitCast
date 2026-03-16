@@ -6,7 +6,7 @@ import { FloatingActionButton } from '@/components/ui/FloatingActionButton';
 import { Screen } from '@/components/ui/Screen';
 import { neutral } from '@/design-tokens';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, Stack } from 'expo-router';
 import React, { useState } from 'react';
 import { FlatList, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
@@ -61,7 +61,7 @@ export default function ClosetScreen() {
     <TouchableOpacity 
       className="flex-1 m-1.5 mb-4"
       onPress={() => router.push({
-        pathname: '/(modals)/cloth-detail',
+        pathname: '/(modals)/cloth-detail' as any,
         params: { id: item.id }
       })}
     >
@@ -84,6 +84,14 @@ export default function ClosetScreen() {
 
   return (
     <Screen className="bg-white" withPadding={false}>
+      {/* Hide default header */}
+      <Stack.Screen options={{ headerShown: false }} />
+
+      {/* Custom Header */}
+      <View className="px-6 pt-6 pb-4 bg-white border-b border-neutral-100">
+        <Text className="text-neutral-900 text-title-lg font-bold">나의 옷장</Text>
+      </View>
+
       {/* Search Bar */}
       <View className="px-4 py-2 bg-white container">
         <View className="bg-neutral-100 rounded-xl h-10 px-3 flex-row items-center border border-transparent focus:border-primary-300">

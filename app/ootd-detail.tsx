@@ -7,7 +7,7 @@ import { Screen } from '@/components/ui/Screen';
 import { neutral, primary } from '@/design-tokens';
 import { useClosetStore } from '@/store/closetStore';
 import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import React, { useMemo } from 'react';
 import { Dimensions, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
@@ -40,6 +40,7 @@ export default function OOTDDetailScreen() {
           id,
           category,
           subCategory: `${category === 'top' ? '상의' : category === 'bottom' ? '하의' : '아우터'}가 부족해요`,
+          pathname: '/(modals)/cloth-detail' as any,
           isPlaceholder: true,
         };
       }
@@ -68,6 +69,10 @@ export default function OOTDDetailScreen() {
 
   const isAlreadySaved = !!existingSavedOutfit;
 
+  const handleLogin = () => {
+    router.push('/(modals)/login-modal' as any);
+  };
+
   const handleClose = () => {
     router.back();
   };
@@ -93,8 +98,11 @@ export default function OOTDDetailScreen() {
 
   return (
     <Screen className="bg-neutral-50" withPadding={false}>
+      {/* Hide default header */}
+      <Stack.Screen options={{ headerShown: false }} />
+
       {/* Custom Header */}
-      <View className="px-6 pt-6 pb-4 bg-white flex-row justify-between items-center shadow-sm">
+      <View className="px-6 pt-6 pb-4 bg-white flex-row justify-between items-center border-b border-neutral-100">
         <View>
           <Text className="text-neutral-500 text-label-md">오늘의 추천 코디</Text>
           <View className="flex-row items-center">

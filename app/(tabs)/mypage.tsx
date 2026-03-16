@@ -7,7 +7,7 @@ import { Screen } from '@/components/ui/Screen';
 import { neutral } from '@/design-tokens';
 import { useAuthStore } from '@/store/authStore';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, Stack, useLocalSearchParams } from 'expo-router';
 import React from 'react';
 import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
@@ -22,7 +22,7 @@ export default function MyPageScreen() {
   };
   
   const handleLogin = () => {
-    router.push('/(modals)/login-modal');
+    router.push('/(modals)/login-modal' as any);
   };
   
   const renderMenuItem = (
@@ -51,6 +51,14 @@ export default function MyPageScreen() {
 
   return (
     <Screen className="bg-neutral-50" withPadding={false}>
+      {/* Hide default header */}
+      <Stack.Screen options={{ headerShown: false }} />
+
+      {/* Custom Header */}
+      <View className="px-6 pt-6 pb-4 bg-white border-b border-neutral-100">
+        <Text className="text-neutral-900 text-title-lg font-bold">마이페이지</Text>
+      </View>
+
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         
         {/* Profile Section */}
@@ -84,21 +92,21 @@ export default function MyPageScreen() {
         <View className="mb-6">
             <Text className="px-6 py-2 text-neutral-500 text-label-sm font-semibold mt-4 mb-1">나의 활동</Text>
             <View className="bg-white border-y border-neutral-100">
-                {renderMenuItem("heart-outline", "찜한 코디", () => router.push('/saved-outfits'))}
-                {renderMenuItem("bookmark-outline", "스타일 스크랩", () => router.push('/style-scrap'), true)}
+                {renderMenuItem("heart-outline", "찜한 코디", () => router.push('/saved-outfits' as any))}
+                {renderMenuItem("bookmark-outline", "스타일 스크랩", () => router.push('/style-scrap' as any), true)}
             </View>
 
             <Text className="px-6 py-2 text-neutral-500 text-label-sm font-semibold mt-6 mb-1">설정</Text>
             <View className="bg-white border-y border-neutral-100">
-                {renderMenuItem("settings-outline", "앱 설정", () => router.push('/settings'))}
-                {renderMenuItem("notifications-outline", "알림 설정", () => router.push('/settings'))}
+                {renderMenuItem("settings-outline", "앱 설정", () => router.push('/settings' as any))}
+                {renderMenuItem("notifications-outline", "알림 설정", () => router.push('/settings' as any))}
                 {renderMenuItem("shield-checkmark-outline", "계정 및 보안", undefined, true)}
             </View>
 
             <Text className="px-6 py-2 text-neutral-500 text-label-sm font-semibold mt-6 mb-1">지원</Text>
             <View className="bg-white border-y border-neutral-100">
                 {renderMenuItem("help-circle-outline", "도움말")}
-                {renderMenuItem("chatbubble-ellipses-outline", "피드백 보내기", () => router.push('/feedback'), true)}
+                {renderMenuItem("chatbubble-ellipses-outline", "피드백 보내기", () => router.push('/feedback' as any), true)}
             </View>
         </View>
         
