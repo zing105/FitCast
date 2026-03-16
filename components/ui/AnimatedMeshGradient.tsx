@@ -16,10 +16,10 @@ import Animated, {
 const { width, height } = Dimensions.get('window');
 
 const BLOB_COLORS = [
-  'rgba(255, 235, 59, 0.12)', // Soft Yellow (Banana)
-  'rgba(33, 150, 243, 0.10)',  // Soft Blue (Gemini)
-  'rgba(156, 39, 176, 0.06)',  // Soft Purple
-  'rgba(76, 175, 80, 0.06)',   // Soft Green
+  'rgba(255, 235, 59, 0.25)', // More Vivid Soft Yellow (Banana)
+  'rgba(33, 150, 243, 0.20)',  // More Vivid Soft Blue (Gemini)
+  'rgba(156, 39, 176, 0.15)',  // More Vivid Soft Purple
+  'rgba(76, 175, 80, 0.15)',   // More Vivid Soft Green
 ];
 
 export const AnimatedMeshGradient = () => {
@@ -124,8 +124,8 @@ export const AnimatedMeshGradient = () => {
         ]} 
       />
       
-      {/* Overlay for ultra softness */}
-      <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255, 255, 255, 0.45)' }]} />
+      {/* Overlay for ultra softness - Reduced opacity to show more through */}
+      <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255, 255, 255, 0.25)' }]} />
     </View>
   );
 };
