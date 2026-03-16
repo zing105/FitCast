@@ -16,10 +16,10 @@ import Animated, {
 const { width, height } = Dimensions.get('window');
 
 const BLOB_COLORS = [
-  'rgba(255, 235, 59, 0.25)', // More Vivid Soft Yellow (Banana)
-  'rgba(33, 150, 243, 0.20)',  // More Vivid Soft Blue (Gemini)
-  'rgba(156, 39, 176, 0.15)',  // More Vivid Soft Purple
-  'rgba(76, 175, 80, 0.15)',   // More Vivid Soft Green
+  'rgba(255, 230, 0, 0.45)',   // Vivid Banana Yellow
+  'rgba(45, 156, 219, 0.35)',  // Vivid Gemini Blue
+  'rgba(187, 107, 217, 0.25)', // Vivid Purple
+  'rgba(39, 174, 96, 0.25)',   // Vivid Green
 ];
 
 export const AnimatedMeshGradient = () => {
@@ -86,7 +86,7 @@ export const AnimatedMeshGradient = () => {
 
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="none">
-      <View style={[StyleSheet.absoluteFill, { backgroundColor: '#FFFFFF' }]} />
+      <View style={[StyleSheet.absoluteFill, { backgroundColor: '#F8FAFC' }]} />
       
       {/* Blob 1 */}
       <Animated.View 
@@ -124,8 +124,8 @@ export const AnimatedMeshGradient = () => {
         ]} 
       />
       
-      {/* Overlay for ultra softness - Reduced opacity to show more through */}
-      <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255, 255, 255, 0.25)' }]} />
+      {/* Overlay for ultra softness - Minimal opacity to ensure visibility */}
+      <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255, 255, 255, 0.15)' }]} />
     </View>
   );
 };

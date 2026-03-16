@@ -84,7 +84,11 @@ export default function HomeScreen() {
   };
 
   return (
-    <Screen className="bg-transparent" withPadding={false}>
+    <Screen 
+      className="flex-1" 
+      backgroundClassName="bg-transparent" 
+      withPadding={false}
+    >
       <AnimatedMeshGradient />
       <ScrollView 
         className="flex-1" 
