@@ -16,10 +16,10 @@ import Animated, {
 const { width, height } = Dimensions.get('window');
 
 const BLOB_COLORS = [
-  'rgba(255, 193, 7, 0.85)',   // Intense Amber/Yellow
-  'rgba(33, 150, 243, 0.75)',  // Intense Azure Blue
-  'rgba(156, 39, 176, 0.65)',  // Intense Deep Purple
-  'rgba(76, 175, 80, 0.65)',   // Intense Emerald Green
+  'rgba(255, 214, 0, 0.4)',   // Bright Banana Yellow
+  'rgba(41, 121, 255, 0.3)',  // Bright Gemini Blue
+  'rgba(170, 0, 255, 0.25)',  // Bright Purple
+  'rgba(0, 230, 118, 0.25)',  // Bright Green
 ];
 
 export const AnimatedMeshGradient = () => {
@@ -31,23 +31,24 @@ export const AnimatedMeshGradient = () => {
 
   useEffect(() => {
     // 매우 느리고 부드러운 무한 반복 애니메이션 (서로 다른 주기로 더 자연스럽게)
+    // Faster animations for better visibility of movement
     anim1.value = withRepeat(
-      withTiming(1, { duration: 25000, easing: Easing.inOut(Easing.sin) }),
+      withTiming(1, { duration: 12000, easing: Easing.inOut(Easing.sin) }),
       -1,
       true
     );
     anim2.value = withRepeat(
-      withTiming(1, { duration: 32000, easing: Easing.inOut(Easing.sin) }),
+      withTiming(1, { duration: 15000, easing: Easing.inOut(Easing.sin) }),
       -1,
       true
     );
     anim3.value = withRepeat(
-      withTiming(1, { duration: 28000, easing: Easing.inOut(Easing.sin) }),
+      withTiming(1, { duration: 18000, easing: Easing.inOut(Easing.sin) }),
       -1,
       true
     );
     anim4.value = withRepeat(
-      withTiming(1, { duration: 35000, easing: Easing.inOut(Easing.sin) }),
+      withTiming(1, { duration: 20000, easing: Easing.inOut(Easing.sin) }),
       -1,
       true
     );
@@ -92,7 +93,7 @@ export const AnimatedMeshGradient = () => {
       <Animated.View 
         style={[
           styles.blob, 
-          { backgroundColor: BLOB_COLORS[0], width: width * 2.5, height: width * 2.5, top: -width * 0.8 },
+          { backgroundColor: BLOB_COLORS[0], width: width * 1.5, height: width * 1.5, top: -width * 0.4 },
           blobStyle1
         ]} 
       />
@@ -101,7 +102,7 @@ export const AnimatedMeshGradient = () => {
       <Animated.View 
         style={[
           styles.blob, 
-          { backgroundColor: BLOB_COLORS[1], width: width * 2.5, height: width * 2.5, top: height * 0.1 },
+          { backgroundColor: BLOB_COLORS[1], width: width * 1.6, height: width * 1.6, top: height * 0.1 },
           blobStyle2
         ]} 
       />
@@ -110,7 +111,7 @@ export const AnimatedMeshGradient = () => {
       <Animated.View 
         style={[
           styles.blob, 
-          { backgroundColor: BLOB_COLORS[2], width: width * 2.2, height: width * 2.2, bottom: -width * 0.4 },
+          { backgroundColor: BLOB_COLORS[2], width: width * 1.4, height: width * 1.4, bottom: -width * 0.2 },
           blobStyle3
         ]} 
       />
@@ -119,13 +120,13 @@ export const AnimatedMeshGradient = () => {
       <Animated.View 
         style={[
           styles.blob, 
-          { backgroundColor: BLOB_COLORS[3], width: width * 2.0, height: width * 2.0, top: height * 0.3 },
+          { backgroundColor: BLOB_COLORS[3], width: width * 1.3, height: width * 1.3, top: height * 0.4 },
           blobStyle4
         ]} 
       />
       
-      {/* Soft overlay to blend colors into white background */}
-      <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255, 255, 255, 0.25)' }]} />
+      {/* Reduced overlay opacity to let shapes pop */}
+      <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255, 255, 255, 0.1)' }]} />
     </View>
   );
 };
