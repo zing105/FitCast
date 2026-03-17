@@ -8,7 +8,7 @@ import { neutral, primary, secondary, tertiary } from '@/design-tokens';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { AnimatedLogo } from '@/components/ui/AnimatedLogo';
 import { AnimatedMeshGradient } from '@/components/ui/AnimatedMeshGradient';
@@ -86,10 +86,13 @@ export default function HomeScreen() {
   return (
     <Screen 
       className="flex-1" 
-      backgroundClassName="bg-transparent" 
+      backgroundClassName="bg-white" 
       withPadding={false}
     >
-      <AnimatedMeshGradient />
+      <View style={[StyleSheet.absoluteFill, { zIndex: -1 }]}>
+        <AnimatedMeshGradient />
+      </View>
+      
       <ScrollView 
         className="flex-1" 
         style={{ backgroundColor: 'transparent' }}

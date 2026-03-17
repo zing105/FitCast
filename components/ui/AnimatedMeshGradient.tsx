@@ -16,10 +16,10 @@ import Animated, {
 const { width, height } = Dimensions.get('window');
 
 const BLOB_COLORS = [
-  'rgba(255, 61, 0, 0.6)',   // Bold Orange
-  'rgba(0, 176, 255, 0.6)',  // Bold Sky Blue
-  'rgba(213, 0, 249, 0.5)',  // Bold Fuchsia
-  'rgba(0, 200, 83, 0.5)',   // Bold Green
+  'rgba(255, 61, 0, 0.8)',   // Very Bold Orange
+  'rgba(0, 176, 255, 0.8)',  // Very Bold Sky Blue
+  'rgba(213, 0, 249, 0.7)',  // Very Bold Fuchsia
+  'rgba(0, 200, 83, 0.7)',   // Very Bold Green
 ];
 
 export const AnimatedMeshGradient = () => {
