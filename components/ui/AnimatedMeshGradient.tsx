@@ -86,7 +86,7 @@ export const AnimatedMeshGradient = () => {
 
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="none">
-      <View style={[StyleSheet.absoluteFill, { backgroundColor: '#F1F5F9' }]} />
+      <View style={[StyleSheet.absoluteFill, { backgroundColor: '#FFFFFF' }]} />
       
       {/* Blob 1 */}
       <Animated.View 
@@ -124,8 +124,8 @@ export const AnimatedMeshGradient = () => {
         ]} 
       />
       
-      {/* Overlay removed for maximum color exposure */}
-      <View style={[StyleSheet.absoluteFill, { backgroundColor: 'transparent' }]} />
+      {/* Soft overlay to blend colors into white background */}
+      <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255, 255, 255, 0.25)' }]} />
     </View>
   );
 };
