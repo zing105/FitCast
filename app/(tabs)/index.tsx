@@ -86,13 +86,18 @@ export default function HomeScreen() {
   return (
     <Screen 
       className="flex-1" 
-      backgroundClassName="bg-white" 
+      backgroundClassName="bg-transparent" 
       withPadding={false}
     >
+      {/* 1. Base White Layer */}
+      <View style={[StyleSheet.absoluteFill, { backgroundColor: '#FFFFFF', zIndex: -2 }]} />
+      
+      {/* 2. Animated Gradient Layer */}
       <View style={[StyleSheet.absoluteFill, { zIndex: -1 }]}>
         <AnimatedMeshGradient />
       </View>
       
+      {/* 3. Content Layer */}
       <ScrollView 
         className="flex-1" 
         style={{ backgroundColor: 'transparent' }}
