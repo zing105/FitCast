@@ -15,14 +15,38 @@ import Animated, {
 
 const { width, height } = Dimensions.get('window');
 
-const BLOB_COLORS = [
-  'rgba(255, 61, 0, 0.8)',   // Very Bold Orange
-  'rgba(0, 176, 255, 0.8)',  // Very Bold Sky Blue
-  'rgba(213, 0, 249, 0.7)',  // Very Bold Fuchsia
-  'rgba(0, 200, 83, 0.7)',   // Very Bold Green
-];
+interface AnimatedMeshGradientProps {
+  variant?: 'home' | 'ai';
+}
 
-export const AnimatedMeshGradient = () => {
+const VARIANTS = {
+  home: {
+    baseBg: '#FFFFFF',
+    overlay: 'rgba(255, 255, 255, 0.25)',
+    colors: [
+      'rgba(255, 224, 102, 0.25)',   // Soft Pastel Yellow
+      'rgba(116, 192, 252, 0.20)',   // Soft Sky Blue
+      'rgba(214, 158, 255, 0.18)',   // Soft Lavender
+      'rgba(165, 216, 142, 0.18)',   // Soft Sage Green
+    ],
+    durations: [20000, 28000, 24000, 32000],
+  },
+  ai: {
+    baseBg: '#F8F9FF',
+    overlay: 'rgba(255, 255, 255, 0.15)',
+    colors: [
+      'rgba(108, 92, 231, 0.35)',    // Deep Magic Purple
+      'rgba(0, 206, 201, 0.30)',     // Magic Turquoise
+      'rgba(255, 118, 117, 0.25)',   // Magic Coral
+      'rgba(162, 155, 254, 0.30)',   // Soft Magic Purple
+    ],
+    durations: [12000, 15000, 18000, 20000],
+  }
+};
+
+export const AnimatedMeshGradient = ({ variant = 'home' }: AnimatedMeshGradientProps) => {
+  const config = VARIANTS[variant];
+  const BLOB_COLORS = config.colors;
   // 각 블롭의 애니메이션 값 (0 ~ 1)
   const anim1 = useSharedValue(0);
   const anim2 = useSharedValue(0);
@@ -31,24 +55,24 @@ export const AnimatedMeshGradient = () => {
 
   useEffect(() => {
     // 매우 느리고 부드러운 무한 반복 애니메이션 (서로 다른 주기로 더 자연스럽게)
-    // Even faster animations for clear visibility of "movement"
+    // Very smooth, slow infinite loops
     anim1.value = withRepeat(
-      withTiming(1, { duration: 6000, easing: Easing.inOut(Easing.sin) }),
+      withTiming(1, { duration: config.durations[0], easing: Easing.inOut(Easing.sin) }),
       -1,
       true
     );
     anim2.value = withRepeat(
-      withTiming(1, { duration: 8000, easing: Easing.inOut(Easing.sin) }),
+      withTiming(1, { duration: config.durations[1], easing: Easing.inOut(Easing.sin) }),
       -1,
       true
     );
     anim3.value = withRepeat(
-      withTiming(1, { duration: 7000, easing: Easing.inOut(Easing.sin) }),
+      withTiming(1, { duration: config.durations[2], easing: Easing.inOut(Easing.sin) }),
       -1,
       true
     );
     anim4.value = withRepeat(
-      withTiming(1, { duration: 9000, easing: Easing.inOut(Easing.sin) }),
+      withTiming(1, { duration: config.durations[3], easing: Easing.inOut(Easing.sin) }),
       -1,
       true
     );
@@ -87,53 +111,46 @@ export const AnimatedMeshGradient = () => {
 
   return (
     <View style={[StyleSheet.absoluteFill, { zIndex: 0 }]} pointerEvents="none">
-      {/* NO base background here for now - it's in index.tsx */}
+      <View style={[StyleSheet.absoluteFill, { backgroundColor: config.baseBg }]} />
       
-      {/* Debug Indicator */}
-      <View style={{ position: 'absolute', top: 100, left: 20, zIndex: 999 }}>
-        <Text style={{ color: 'red', fontWeight: 'bold', fontSize: 14 }}>
-          MESH_ANIM_ACTIVE_STATIC_TEST
-        </Text>
-      </View>
-      
-      {/* Blob 1 - Static Square */}
-      <View 
-        style={{ 
-          position: 'absolute',
-          backgroundColor: 'orange',
-          width: 200,
-          height: 200,
-          top: 150,
-          left: 50,
-          opacity: 0.8
-        }} 
+      {/* Blob 1 */}
+      <Animated.View 
+        style={[
+          styles.blob, 
+          { backgroundColor: BLOB_COLORS[0], width: width * 1.5, height: width * 1.5, top: -width * 0.4 },
+          blobStyle1
+        ]} 
       />
       
-      {/* Blob 2 - Static Square */}
-      <View 
-        style={{ 
-          position: 'absolute',
-          backgroundColor: 'blue',
-          width: 150,
-          height: 150,
-          top: 400,
-          left: 200,
-          opacity: 0.8
-        }} 
+      {/* Blob 2 */}
+      <Animated.View 
+        style={[
+          styles.blob, 
+          { backgroundColor: BLOB_COLORS[1], width: width * 1.8, height: width * 1.8, top: height * 0.1 },
+          blobStyle2
+        ]} 
       />
       
-      {/* Blob 3 - Static Square */}
-      <View 
-        style={{ 
-          position: 'absolute',
-          backgroundColor: 'purple',
-          width: 300,
-          height: 100,
-          bottom: 200,
-          left: 0,
-          opacity: 0.8
-        }} 
+      {/* Blob 3 */}
+      <Animated.View 
+        style={[
+          styles.blob, 
+          { backgroundColor: BLOB_COLORS[2], width: width * 1.6, height: width * 1.6, bottom: -width * 0.3 },
+          blobStyle3
+        ]} 
       />
+
+      {/* Blob 4 */}
+      <Animated.View 
+        style={[
+          styles.blob, 
+          { backgroundColor: BLOB_COLORS[3], width: width * 1.4, height: width * 1.4, top: height * 0.3 },
+          blobStyle4
+        ]} 
+      />
+      
+      {/* Soft overlay to blend colors */}
+      <View style={[StyleSheet.absoluteFill, { backgroundColor: config.overlay }]} />
     </View>
   );
 };

@@ -114,8 +114,10 @@ export default function AIRecommendationModal() {
   );
 
   return (
-    <Screen className="bg-neutral-50" withPadding={false}>
-      <AnimatedMeshGradient />
+    <Screen className="bg-transparent" withPadding={false}>
+      <View style={[StyleSheet.absoluteFill, { zIndex: -1 }]}>
+        <AnimatedMeshGradient variant="ai" />
+      </View>
       {step !== 'loading' && step !== 'result' && renderHeader()}
 
       <ScrollView className="flex-1 px-6 pb-12" showsVerticalScrollIndicator={false}>
