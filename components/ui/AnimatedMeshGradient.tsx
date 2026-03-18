@@ -22,12 +22,12 @@ interface AnimatedMeshGradientProps {
 const VARIANTS = {
   home: {
     baseBg: '#FFFFFF',
-    overlay: 'rgba(255, 255, 255, 0.25)',
+    overlay: 'rgba(255, 255, 255, 0.15)',
     colors: [
-      'rgba(255, 224, 102, 0.25)',   // Soft Pastel Yellow
-      'rgba(116, 192, 252, 0.20)',   // Soft Sky Blue
-      'rgba(214, 158, 255, 0.18)',   // Soft Lavender
-      'rgba(165, 216, 142, 0.18)',   // Soft Sage Green
+      'rgba(255, 214, 0, 0.40)',   // More Saturated Yellow
+      'rgba(3, 169, 244, 0.35)',   // More Saturated Sky Blue
+      'rgba(156, 39, 176, 0.30)',  // More Saturated Lavender/Purple
+      'rgba(76, 175, 80, 0.30)',   // More Saturated Sage Green
     ],
     durations: [20000, 28000, 24000, 32000],
   },

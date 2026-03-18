@@ -11,7 +11,7 @@ import { getOutfitRecommendation } from '@/utils/gemini';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { ActivityIndicator, Image, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import * as Linking from 'expo-linking';
 import { OutfitRecommendationResponse, SuggestedPurchase } from '@/utils/gemini';
 
