@@ -3,7 +3,7 @@
  * 배경에 은은하게 움직이는 파스텔톤 그라데이션을 제공합니다.
  */
 import React, { useEffect } from 'react';
-import { Dimensions, StyleSheet, View } from 'react-native';
+import { Dimensions, StyleSheet, Text, View } from 'react-native';
 import Animated, {
     Easing,
     interpolate,
@@ -87,50 +87,52 @@ export const AnimatedMeshGradient = () => {
 
   return (
     <View style={[StyleSheet.absoluteFill, { zIndex: 0 }]} pointerEvents="none">
-      {/* Base background white */}
-      <View style={[StyleSheet.absoluteFill, { backgroundColor: '#FFFFFF' }]} />
+      {/* NO base background here for now - it's in index.tsx */}
       
-      {/* Debug Indicator - Will remove after confirmation */}
+      {/* Debug Indicator */}
       <View style={{ position: 'absolute', top: 100, left: 20, zIndex: 999 }}>
-        <Animated.Text style={{ color: 'red', fontWeight: 'bold', fontSize: 10, opacity: 0.5 }}>
-          MESH_ANIM_ACTIVE
-        </Animated.Text>
+        <Text style={{ color: 'red', fontWeight: 'bold', fontSize: 14 }}>
+          MESH_ANIM_ACTIVE_STATIC_TEST
+        </Text>
       </View>
       
-      {/* Blob 1 */}
-      <Animated.View 
-        style={[
-          styles.blob, 
-          { backgroundColor: BLOB_COLORS[0], width: width * 0.8, height: width * 0.8, top: height * 0.05 },
-          blobStyle1
-        ]} 
+      {/* Blob 1 - Static Square */}
+      <View 
+        style={{ 
+          position: 'absolute',
+          backgroundColor: 'orange',
+          width: 200,
+          height: 200,
+          top: 150,
+          left: 50,
+          opacity: 0.8
+        }} 
       />
       
-      {/* Blob 2 */}
-      <Animated.View 
-        style={[
-          styles.blob, 
-          { backgroundColor: BLOB_COLORS[1], width: width * 0.9, height: width * 0.9, top: height * 0.3 },
-          blobStyle2
-        ]} 
+      {/* Blob 2 - Static Square */}
+      <View 
+        style={{ 
+          position: 'absolute',
+          backgroundColor: 'blue',
+          width: 150,
+          height: 150,
+          top: 400,
+          left: 200,
+          opacity: 0.8
+        }} 
       />
       
-      {/* Blob 3 */}
-      <Animated.View 
-        style={[
-          styles.blob, 
-          { backgroundColor: BLOB_COLORS[2], width: width * 0.7, height: width * 0.7, top: height * 0.6 },
-          blobStyle3
-        ]} 
-      />
-
-      {/* Blob 4 */}
-      <Animated.View 
-        style={[
-          styles.blob, 
-          { backgroundColor: BLOB_COLORS[3], width: width * 0.6, height: width * 0.6, top: height * 0.2 },
-          blobStyle4
-        ]} 
+      {/* Blob 3 - Static Square */}
+      <View 
+        style={{ 
+          position: 'absolute',
+          backgroundColor: 'purple',
+          width: 300,
+          height: 100,
+          bottom: 200,
+          left: 0,
+          opacity: 0.8
+        }} 
       />
     </View>
   );
