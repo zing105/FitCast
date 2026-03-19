@@ -22,12 +22,12 @@ interface AnimatedMeshGradientProps {
 const VARIANTS = {
   home: {
     baseBg: '#FFFFFF',
-    overlay: 'rgba(255, 255, 255, 0.15)',
+    overlay: 'rgba(255, 255, 255, 0.05)', // Minimal overlay to maximize color visibility
     colors: [
-      'rgba(0, 100, 255, 0.40)',   // Toss Blue
-      'rgba(50, 130, 255, 0.35)',  // Light Toss Blue
-      'rgba(0, 210, 255, 0.30)',   // Sky Blue / Cyan
-      'rgba(100, 180, 255, 0.30)', // Soft Blue
+      'rgba(0, 100, 255, 0.75)',   // Vibrant Toss Blue
+      'rgba(50, 130, 255, 0.70)',  // Vibrant Light Blue
+      'rgba(0, 210, 255, 0.65)',   // Vibrant Sky Blue
+      'rgba(100, 180, 255, 0.65)', // Vibrant Soft Blue
     ],
     durations: [20000, 28000, 24000, 32000],
   },
