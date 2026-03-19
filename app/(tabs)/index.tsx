@@ -84,30 +84,34 @@ export default function HomeScreen() {
   };
 
   return (
-    <Screen 
-      className="flex-1" 
-      backgroundClassName="bg-transparent" 
-      withPadding={false}
-    >
-      <View style={[StyleSheet.absoluteFill, { zIndex: -1 }]}>
+    <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+      {/* 1. Background Layer (zIndex 0) */}
+      <View style={[StyleSheet.absoluteFill, { zIndex: 0 }]}>
         <AnimatedMeshGradient variant="home" />
       </View>
       
-      <ScrollView 
+      {/* 2. Content Layer (zIndex 1) */}
+      <Screen 
         className="flex-1" 
-        style={{ backgroundColor: 'transparent' }}
-        contentContainerStyle={{ paddingBottom: 100, backgroundColor: 'transparent' }}
-        showsVerticalScrollIndicator={false}
+        backgroundClassName="bg-transparent" 
+        withPadding={false}
+        style={{ zIndex: 1 }}
       >
-        {/* Header Section */}
-        <View className="px-6 pt-4 pb-6 bg-transparent">
-          {/* Top Bar: Logo & Bell */}
-          <View className="flex-row justify-between items-center mb-6">
-            <AnimatedLogo />
-            <TouchableOpacity 
-              onPress={() => router.push('/notifications')}
-              className="w-10 h-10 bg-white rounded-full items-center justify-center shadow-sm border border-neutral-100 relative"
-            >
+        <ScrollView 
+          className="flex-1" 
+          style={{ backgroundColor: 'transparent' }}
+          contentContainerStyle={{ paddingBottom: 100, backgroundColor: 'transparent' }}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Header Section */}
+          <View className="px-6 pt-4 pb-6 bg-transparent">
+            {/* Top Bar: Logo & Bell */}
+            <View className="flex-row justify-between items-center mb-6">
+              <AnimatedLogo />
+              <TouchableOpacity 
+                onPress={() => router.push('/notifications')}
+                className="w-10 h-10 bg-white rounded-full items-center justify-center shadow-sm border border-neutral-100 relative"
+              >
               <Ionicons name="notifications-outline" size={22} color={neutral[800]} />
               {/* 새 알림 배지 (현재는 디자인 용 고정값) */}
               <View className="absolute top-2 right-2 w-2 h-2 bg-primary-500 rounded-full border border-white" />
@@ -327,5 +331,6 @@ export default function HomeScreen() {
       {/* Floating Action Button */}
       <FloatingActionButton onPress={handleCameraOpen} />
     </Screen>
+  </View>
   );
 }
