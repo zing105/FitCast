@@ -21,13 +21,13 @@ interface AnimatedMeshGradientProps {
 
 const VARIANTS = {
   home: {
-    baseBg: '#FFFFFF',
-    overlay: 'rgba(255, 255, 255, 0.15)',
+    baseBg: 'red', // TEST: If this shows up, the component is visible.
+    overlay: 'transparent',
     colors: [
-      'rgba(255, 214, 0, 0.40)',   // More Saturated Yellow
-      'rgba(3, 169, 244, 0.35)',   // More Saturated Sky Blue
-      'rgba(156, 39, 176, 0.30)',  // More Saturated Lavender/Purple
-      'rgba(76, 175, 80, 0.30)',   // More Saturated Sage Green
+      'rgba(0, 0, 0, 1)',   // TEST: Pure Black
+      'rgba(0, 0, 255, 1)', // TEST: Pure Blue
+      'rgba(0, 255, 0, 1)', // TEST: Pure Green
+      'rgba(255, 255, 0, 1)', // TEST: Pure Yellow
     ],
     durations: [20000, 28000, 24000, 32000],
   },
