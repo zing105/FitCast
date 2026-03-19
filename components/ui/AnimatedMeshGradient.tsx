@@ -22,12 +22,12 @@ interface AnimatedMeshGradientProps {
 const VARIANTS = {
   home: {
     baseBg: '#FFFFFF',
-    overlay: 'rgba(255, 255, 255, 0.20)', // Soft overlay to blend mesh colors
+    overlay: 'rgba(255, 255, 255, 0.1)',
     colors: [
-      'rgba(255, 224, 102, 0.55)',   // Vivid Pastel Yellow
-      'rgba(116, 192, 252, 0.50)',   // Vivid Sky Blue
-      'rgba(214, 158, 255, 0.45)',   // Vivid Lavender
-      'rgba(165, 216, 142, 0.45)',   // Vivid Sage Green
+      'rgba(255, 224, 102, 0.75)',   // High Visibility Pastel Yellow
+      'rgba(116, 192, 252, 0.70)',   // High Visibility Sky Blue
+      'rgba(214, 158, 255, 0.65)',   // High Visibility Lavender
+      'rgba(165, 216, 142, 0.65)',   // High Visibility Sage Green
     ],
     durations: [24000, 32000, 28000, 36000], // Slightly slower for more elegance
   },
@@ -151,6 +151,13 @@ export const AnimatedMeshGradient = ({ variant = 'home' }: AnimatedMeshGradientP
       
       {/* Soft overlay to blend colors */}
       <View style={[StyleSheet.absoluteFill, { backgroundColor: config.overlay }]} />
+
+      {/* Temp Variant Indicator for Debugging */}
+      <View style={{ position: 'absolute', bottom: 100, left: 20, zIndex: 999 }}>
+        <Text style={{ color: 'red', fontSize: 10, fontWeight: 'bold', opacity: 0.5 }}>
+          [VARIANT: {variant.toUpperCase()}]
+        </Text>
+      </View>
     </View>
   );
 };
