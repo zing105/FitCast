@@ -100,7 +100,7 @@ export default function SavedOutfitsScreen() {
               </Text>
               
               <TouchableOpacity 
-                onPress={() => router.push('/(tabs)')}
+                onPress={() => router.push('/(modals)/ai-recommendation' as any)}
                 className="mt-8 bg-primary-500 py-3 px-8 rounded-full"
               >
                 <Text className="text-white text-label-lg font-bold">코디 추천 받으러 가기</Text>
