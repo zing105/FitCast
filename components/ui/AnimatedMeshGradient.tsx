@@ -45,6 +45,7 @@ const VARIANTS = {
 };
 
 export const AnimatedMeshGradient = ({ variant = 'home' }: AnimatedMeshGradientProps) => {
+  const { width, height } = useWindowDimensions();
   const config = VARIANTS[variant];
   const BLOB_COLORS = config.colors;
   // 각 블롭의 애니메이션 값 (0 ~ 1)
@@ -108,9 +109,6 @@ export const AnimatedMeshGradient = ({ variant = 'home' }: AnimatedMeshGradientP
       { scale: interpolate(anim4.value, [0, 1], [0.8, 1.2]) },
     ],
   }));
-
-  const { width, height } = useWindowDimensions();
-
   return (
     <View 
       style={[
