@@ -1,19 +1,13 @@
 /**
  * AnimatedMeshGradient Component
  * 배경에 은은하게 움직이는 파스텔톤 그라데이션을 제공합니다.
+ * 웹 호환성을 위해 useAnimatedStyle 대신 일반 Animated.Value + style 사용
  */
-import React, { useEffect } from 'react';
-import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
-import Animated, {
-    Easing,
-    interpolate,
-    useAnimatedStyle,
-    useSharedValue,
-    withRepeat,
-    withTiming
-} from 'react-native-reanimated';
+import React, { useEffect, useRef } from 'react';
+import { Animated, Dimensions, Easing, StyleSheet, View } from 'react-native';
 
-
+// 동기적으로 초기 크기 확보 (useWindowDimensions는 첫 렌더에 0을 반환할 수 있음)
+const SCREEN = Dimensions.get('window');
 
 interface AnimatedMeshGradientProps {
   variant?: 'home' | 'ai';
@@ -35,130 +29,195 @@ const VARIANTS = {
     baseBg: '#F8F9FF',
     overlay: 'rgba(255, 255, 255, 0.15)',
     colors: [
-      'rgba(108, 92, 231, 0.35)',    // Deep Magic Purple
-      'rgba(0, 206, 201, 0.30)',     // Magic Turquoise
-      'rgba(255, 118, 117, 0.25)',   // Magic Coral
-      'rgba(162, 155, 254, 0.30)',   // Soft Magic Purple
+      'rgba(108, 92, 231, 0.55)',    // Deep Magic Purple
+      'rgba(0, 206, 201, 0.50)',     // Magic Turquoise
+      'rgba(255, 118, 117, 0.45)',   // Magic Coral
+      'rgba(162, 155, 254, 0.50)',   // Soft Magic Purple
     ],
     durations: [12000, 15000, 18000, 20000],
   }
 };
 
 export const AnimatedMeshGradient = ({ variant = 'home' }: AnimatedMeshGradientProps) => {
-  const { width, height } = useWindowDimensions();
   const config = VARIANTS[variant];
-  const BLOB_COLORS = config.colors;
-  // 각 블롭의 애니메이션 값 (0 ~ 1)
-  const anim1 = useSharedValue(0);
-  const anim2 = useSharedValue(0);
-  const anim3 = useSharedValue(0);
-  const anim4 = useSharedValue(0);
+  const W = SCREEN.width || 400;  // 폴백값 400
+  const H = SCREEN.height || 800; // 폴백값 800
+
+  // React Native 기본 Animated.Value 사용 (웹 100% 호환)
+  const anim1 = useRef(new Animated.Value(0)).current;
+  const anim2 = useRef(new Animated.Value(0)).current;
+  const anim3 = useRef(new Animated.Value(0)).current;
+  const anim4 = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // 매우 느리고 부드러운 무한 반복 애니메이션 (서로 다른 주기로 더 자연스럽게)
-    // Very smooth, slow infinite loops
-    anim1.value = withRepeat(
-      withTiming(1, { duration: config.durations[0], easing: Easing.inOut(Easing.sin) }),
-      -1,
-      true
-    );
-    anim2.value = withRepeat(
-      withTiming(1, { duration: config.durations[1], easing: Easing.inOut(Easing.sin) }),
-      -1,
-      true
-    );
-    anim3.value = withRepeat(
-      withTiming(1, { duration: config.durations[2], easing: Easing.inOut(Easing.sin) }),
-      -1,
-      true
-    );
-    anim4.value = withRepeat(
-      withTiming(1, { duration: config.durations[3], easing: Easing.inOut(Easing.sin) }),
-      -1,
-      true
-    );
+    const createLoop = (anim: Animated.Value, duration: number) => {
+      return Animated.loop(
+        Animated.sequence([
+          Animated.timing(anim, {
+            toValue: 1,
+            duration,
+            easing: Easing.inOut(Easing.sin),
+            useNativeDriver: false, // transform on web needs false
+          }),
+          Animated.timing(anim, {
+            toValue: 0,
+            duration,
+            easing: Easing.inOut(Easing.sin),
+            useNativeDriver: false,
+          }),
+        ])
+      );
+    };
+
+    const animations = [
+      createLoop(anim1, config.durations[0]),
+      createLoop(anim2, config.durations[1]),
+      createLoop(anim3, config.durations[2]),
+      createLoop(anim4, config.durations[3]),
+    ];
+
+    Animated.parallel(animations).start();
+
+    return () => {
+      animations.forEach(a => a.stop());
+    };
   }, []);
 
-  const blobStyle1 = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: interpolate(anim1.value, [0, 1], [-width * 0.3, width * 0.4]) },
-      { translateY: interpolate(anim1.value, [0, 1], [-height * 0.1, height * 0.3]) },
-      { scale: interpolate(anim1.value, [0, 1], [1, 1.5]) },
-    ],
-  }));
-
-  const blobStyle2 = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: interpolate(anim2.value, [0, 1], [width * 0.6, -width * 0.2]) },
-      { translateY: interpolate(anim2.value, [0, 1], [height * 0.1, height * 0.5]) },
-      { scale: interpolate(anim2.value, [0, 1], [1.3, 0.7]) },
-    ],
-  }));
-
-  const blobStyle3 = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: interpolate(anim3.value, [0, 1], [width * 0.1, -width * 0.3]) },
-      { translateY: interpolate(anim3.value, [0, 1], [height * 0.8, height * 0.4]) },
-    ],
-  }));
-
-  const blobStyle4 = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: interpolate(anim4.value, [0, 1], [-width * 0.2, width * 0.5]) },
-      { translateY: interpolate(anim4.value, [0, 1], [height * 0.3, height * 0.7]) },
-      { scale: interpolate(anim4.value, [0, 1], [0.8, 1.2]) },
-    ],
-  }));
-
   return (
-    <View 
-      style={[
-        StyleSheet.absoluteFill, 
-        { 
-          zIndex: 0, 
-          pointerEvents: 'none'
-        }
-      ]} 
-    >
+    <View style={[StyleSheet.absoluteFill, { overflow: 'hidden' }]} pointerEvents="none">
       <View style={[StyleSheet.absoluteFill, { backgroundColor: config.baseBg }]} />
-      
+
       {/* Blob 1 */}
-      <Animated.View 
+      <Animated.View
         style={[
-          styles.blob, 
-          { backgroundColor: BLOB_COLORS[0], width: width * 1.5, height: width * 1.5, top: -width * 0.4 },
-          blobStyle1
-        ]} 
+          styles.blob,
+          {
+            backgroundColor: config.colors[0],
+            width: W * 1.5,
+            height: W * 1.5,
+            top: -W * 0.4,
+            left: -W * 0.3,
+            transform: [
+              {
+                translateX: anim1.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [-W * 0.3, W * 0.4],
+                }),
+              },
+              {
+                translateY: anim1.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [-H * 0.1, H * 0.3],
+                }),
+              },
+              {
+                scale: anim1.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [1, 1.5],
+                }),
+              },
+            ],
+          },
+        ]}
       />
-      
+
       {/* Blob 2 */}
-      <Animated.View 
+      <Animated.View
         style={[
-          styles.blob, 
-          { backgroundColor: BLOB_COLORS[1], width: width * 1.8, height: width * 1.8, top: height * 0.1 },
-          blobStyle2
-        ]} 
+          styles.blob,
+          {
+            backgroundColor: config.colors[1],
+            width: W * 1.8,
+            height: W * 1.8,
+            top: H * 0.1,
+            left: 0,
+            transform: [
+              {
+                translateX: anim2.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [W * 0.6, -W * 0.2],
+                }),
+              },
+              {
+                translateY: anim2.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [H * 0.1, H * 0.5],
+                }),
+              },
+              {
+                scale: anim2.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [1.3, 0.7],
+                }),
+              },
+            ],
+          },
+        ]}
       />
-      
+
       {/* Blob 3 */}
-      <Animated.View 
+      <Animated.View
         style={[
-          styles.blob, 
-          { backgroundColor: BLOB_COLORS[2], width: width * 1.6, height: width * 1.6, bottom: -width * 0.3 },
-          blobStyle3
-        ]} 
+          styles.blob,
+          {
+            backgroundColor: config.colors[2],
+            width: W * 1.6,
+            height: W * 1.6,
+            bottom: -W * 0.3,
+            left: 0,
+            transform: [
+              {
+                translateX: anim3.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [W * 0.1, -W * 0.3],
+                }),
+              },
+              {
+                translateY: anim3.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [H * 0.8, H * 0.4],
+                }),
+              },
+            ],
+          },
+        ]}
       />
 
       {/* Blob 4 */}
-      <Animated.View 
+      <Animated.View
         style={[
-          styles.blob, 
-          { backgroundColor: BLOB_COLORS[3], width: width * 1.4, height: width * 1.4, top: height * 0.3 },
-          blobStyle4
-        ]} 
+          styles.blob,
+          {
+            backgroundColor: config.colors[3],
+            width: W * 1.4,
+            height: W * 1.4,
+            top: H * 0.3,
+            left: 0,
+            transform: [
+              {
+                translateX: anim4.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [-W * 0.2, W * 0.5],
+                }),
+              },
+              {
+                translateY: anim4.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [H * 0.3, H * 0.7],
+                }),
+              },
+              {
+                scale: anim4.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0.8, 1.2],
+                }),
+              },
+            ],
+          },
+        ]}
       />
-      
-      {/* Soft overlay to blend colors */}
+
+      {/* Soft overlay */}
       <View style={[StyleSheet.absoluteFill, { backgroundColor: config.overlay }]} />
     </View>
   );
