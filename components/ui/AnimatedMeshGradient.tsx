@@ -22,12 +22,12 @@ interface AnimatedMeshGradientProps {
 const VARIANTS = {
   home: {
     baseBg: '#FFFFFF',
-    overlay: 'rgba(255, 255, 255, 0.15)', // Blending overlay
+    overlay: 'transparent',
     colors: [
-      'rgba(0, 100, 255, 0.45)',   // Toss Blue
-      'rgba(50, 130, 255, 0.40)',  // Light Blue
-      'rgba(0, 210, 255, 0.35)',   // Sky Blue
-      'rgba(100, 180, 255, 0.35)', // Soft Blue
+      'rgba(0, 100, 255, 0.7)',    // Toss Blue - bold
+      'rgba(50, 130, 255, 0.65)',  // Light Blue - bold
+      'rgba(0, 210, 255, 0.6)',    // Sky Blue - bold
+      'rgba(100, 180, 255, 0.6)',  // Soft Blue - bold
     ],
     durations: [20000, 28000, 24000, 32000],
   },
@@ -168,6 +168,6 @@ const styles = StyleSheet.create({
   blob: {
     position: 'absolute',
     borderRadius: 1000,
-    opacity: 0.8,
+    opacity: 1,
   },
 });
