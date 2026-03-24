@@ -84,11 +84,15 @@ export default function HomeScreen() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#3B82F6' }}>
+    <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+      {/* Background - 루트 View 직접 자식으로 배치 */}
+      <AnimatedMeshGradient variant="home" />
+      
+      {/* Content - 인라인 style로 투명 배경 강제 */}
       <Screen 
         className="flex-1" 
-        backgroundClassName="bg-transparent" 
         withPadding={false}
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'transparent' }}
       >
         <ScrollView 
           className="flex-1" 
