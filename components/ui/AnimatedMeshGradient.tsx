@@ -22,12 +22,12 @@ interface AnimatedMeshGradientProps {
 const VARIANTS = {
   home: {
     baseBg: '#FFFFFF',
-    overlay: 'transparent', // 오버레이 완전 제거하여 색상 가림 방지
+    overlay: 'rgba(255, 255, 255, 0.15)', // Blending overlay
     colors: [
-      'rgba(0, 100, 255, 1.0)',   // Pure Toss Blue (No Transparency)
-      'rgba(0, 80, 230, 0.9)',    // Deep Solid Blue
-      'rgba(20, 140, 255, 0.9)',  // Vibrant Bright Blue
-      'rgba(0, 180, 255, 0.85)',  // Cyan Blue
+      'rgba(0, 100, 255, 0.45)',   // Toss Blue
+      'rgba(50, 130, 255, 0.40)',  // Light Blue
+      'rgba(0, 210, 255, 0.35)',   // Sky Blue
+      'rgba(100, 180, 255, 0.35)', // Soft Blue
     ],
     durations: [20000, 28000, 24000, 32000],
   },
@@ -109,25 +109,18 @@ export const AnimatedMeshGradient = ({ variant = 'home' }: AnimatedMeshGradientP
       { scale: interpolate(anim4.value, [0, 1], [0.8, 1.2]) },
     ],
   }));
+
   return (
     <View 
       style={[
         StyleSheet.absoluteFill, 
         { 
-          zIndex: 100, // 최상단 배치 유도
-          backgroundColor: 'blue', // 강제 파란색 배경
-          borderWidth: 10, 
-          borderColor: 'red',
-          alignItems: 'center',
-          justifyContent: 'center'
+          zIndex: 0, 
+          pointerEvents: 'none'
         }
       ]} 
-      pointerEvents="none"
     >
-      <Text style={{ color: 'white', fontSize: 24, fontWeight: 'bold' }}>
-        MESH GRADIENT IS HERE ({variant.toUpperCase()})
-      </Text>
-      <View style={[StyleSheet.absoluteFill, { backgroundColor: config.baseBg, opacity: 0.1 }]} />
+      <View style={[StyleSheet.absoluteFill, { backgroundColor: config.baseBg }]} />
       
       {/* Blob 1 */}
       <Animated.View 
