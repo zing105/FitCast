@@ -18,10 +18,10 @@ const VARIANTS = {
     baseBg: '#FFFFFF',
     overlay: 'transparent',
     colors: [
-      'rgba(0, 100, 255, 0.4)',    // Toss Blue - pastel
-      'rgba(50, 130, 255, 0.35)',  // Light Blue - pastel
-      'rgba(0, 210, 255, 0.3)',    // Sky Blue - pastel
-      'rgba(100, 180, 255, 0.3)',  // Soft Blue - pastel
+      'rgba(0, 100, 255, 0.25)',    // Toss Blue - soft pastel
+      'rgba(50, 130, 255, 0.22)',  // Light Blue - soft pastel
+      'rgba(0, 210, 255, 0.18)',   // Sky Blue - soft pastel
+      'rgba(100, 180, 255, 0.20)', // Soft Blue - soft pastel
     ],
     durations: [20000, 28000, 24000, 32000],
   },
