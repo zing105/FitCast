@@ -3,7 +3,7 @@
  * 배경에 은은하게 움직이는 파스텔톤 그라데이션을 제공합니다.
  */
 import React, { useEffect } from 'react';
-import { Dimensions, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import Animated, {
     Easing,
     interpolate,
@@ -13,7 +13,7 @@ import Animated, {
     withTiming
 } from 'react-native-reanimated';
 
-const { width, height } = Dimensions.get('window');
+
 
 interface AnimatedMeshGradientProps {
   variant?: 'home' | 'ai';
@@ -109,9 +109,27 @@ export const AnimatedMeshGradient = ({ variant = 'home' }: AnimatedMeshGradientP
     ],
   }));
 
+  const { width, height } = useWindowDimensions();
+
   return (
-    <View style={[StyleSheet.absoluteFill, { zIndex: 0 }]} pointerEvents="none">
-      <View style={[StyleSheet.absoluteFill, { backgroundColor: config.baseBg }]} />
+    <View 
+      style={[
+        StyleSheet.absoluteFill, 
+        { 
+          zIndex: 100, // 최상단 배치 유도
+          backgroundColor: 'blue', // 강제 파란색 배경
+          borderWidth: 10, 
+          borderColor: 'red',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }
+      ]} 
+      pointerEvents="none"
+    >
+      <Text style={{ color: 'white', fontSize: 24, fontWeight: 'bold' }}>
+        MESH GRADIENT IS HERE ({variant.toUpperCase()})
+      </Text>
+      <View style={[StyleSheet.absoluteFill, { backgroundColor: config.baseBg, opacity: 0.1 }]} />
       
       {/* Blob 1 */}
       <Animated.View 
