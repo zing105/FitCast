@@ -16,6 +16,7 @@ import { WaveEffect } from '@/components/ui/WaveEffect';
 import { useRecommendation } from '@/hooks/useRecommendation';
 import { useAuthStore } from '@/store/authStore';
 import { useClosetStore } from '@/store/closetStore';
+import { useNotificationStore } from '@/store/notificationStore';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -41,6 +42,7 @@ export default function HomeScreen() {
   const { weather, recommendation, isLoading } = useRecommendation();
   
   const { isLoggedIn, user } = useAuthStore();
+  const getUnreadCount = useNotificationStore(state => state.getUnreadCount);
   
   const [cardHeight, setCardHeight] = React.useState(0);
   
@@ -106,12 +108,14 @@ export default function HomeScreen() {
             <View className="flex-row justify-between items-center mb-6">
               <AnimatedLogo />
               <TouchableOpacity 
-                onPress={() => router.push('/notifications')}
+                onPress={() => router.push('/notifications' as any)}
                 className="w-10 h-10 bg-white rounded-full items-center justify-center shadow-sm border border-neutral-100 relative"
               >
               <Ionicons name="notifications-outline" size={22} color={neutral[800]} />
-              {/* 새 알림 배지 (현재는 디자인 용 고정값) */}
-              <View className="absolute top-2 right-2 w-2 h-2 bg-primary-500 rounded-full border border-white" />
+              {/* unread count badge */}
+              {getUnreadCount() > 0 && (
+                <View className="absolute top-2 right-2 w-2 h-2 bg-primary-500 rounded-full border border-white" />
+              )}
             </TouchableOpacity>
           </View>
 

@@ -100,12 +100,12 @@ export default function MyPageScreen() {
             <View className="bg-white border-y border-neutral-100">
                 {renderMenuItem("settings-outline", "앱 설정", () => router.push('/settings' as any))}
                 {renderMenuItem("notifications-outline", "알림 설정", () => router.push('/settings' as any))}
-                {renderMenuItem("shield-checkmark-outline", "계정 및 보안", undefined, true)}
+                {renderMenuItem("shield-checkmark-outline", "계정 및 보안", () => router.push('/account-security' as any), true)}
             </View>
 
             <Text className="px-6 py-2 text-neutral-500 text-label-sm font-semibold mt-6 mb-1">지원</Text>
             <View className="bg-white border-y border-neutral-100">
-                {renderMenuItem("help-circle-outline", "도움말")}
+                {renderMenuItem("help-circle-outline", "도움말", () => router.push('/help' as any))}
                 {renderMenuItem("chatbubble-ellipses-outline", "피드백 보내기", () => router.push('/feedback' as any), true)}
             </View>
         </View>

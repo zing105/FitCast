@@ -1,70 +1,21 @@
-/**
- * Notifications Screen (알림 센터)
- * 앱의 주요 알림(세탁, 날씨, 추천)을 리스트 형태로 보여주는 화면
- */
 import { Screen } from '@/components/ui/Screen';
 import { neutral, primary, secondary, tertiary } from '@/design-tokens';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
 import React from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
-
-// 알림 데이터 타입
-interface Notification {
-  id: string;
-  type: 'wash' | 'weather' | 'recommendation';
-  title: string;
-  message: string;
-  time: string;
-  isRead: boolean;
-}
-
-// Mock 데이터
-const MOCK_NOTIFICATIONS: Notification[] = [
-  {
-    id: '1',
-    type: 'wash',
-    title: '세탁 알림',
-    message: '흰색 면 티셔츠를 입은 지 3일이 지났어요. 세탁이 필요할 것 같습니다!',
-    time: '2시간 전',
-    isRead: false,
-  },
-  {
-    id: '2',
-    type: 'weather',
-    title: '날씨 조언',
-    message: '오후 3시경 소나기 소식이 있습니다. 우산을 챙기거나 아우터를 준비하세요.',
-    time: '5시간 전',
-    isRead: false,
-  },
-  {
-    id: '3',
-    type: 'recommendation',
-    title: '새로운 코디 추천',
-    message: '하림님의 취향과 내일 날씨를 분석한 새로운 코디 조합이 등록되었습니다.',
-    time: '어제',
-    isRead: true,
-  },
-  {
-    id: '4',
-    type: 'wash',
-    title: '세탁 완료 알림',
-    message: '등록하셨던 드라이클리닝 아이템들의 세탁 주기가 완료되었습니다.',
-    time: '2일 전',
-    isRead: true,
-  },
-];
+import { useNotificationStore } from '@/store/notificationStore';
 
 const TYPE_CONFIG = {
   wash: {
     icon: 'water',
-    color: secondary[500] || '#FF5722',
-    bgColor: secondary[50] || '#FFF3E0',
+    color: '#FF5722',
+    bgColor: '#FFF3E0',
   },
   weather: {
     icon: 'rainy',
-    color: tertiary[500] || '#009688',
-    bgColor: tertiary[50] || '#E0F2F1',
+    color: '#009688',
+    bgColor: '#E0F2F1',
   },
   recommendation: {
     icon: 'sparkles',
@@ -75,10 +26,10 @@ const TYPE_CONFIG = {
 
 export default function NotificationsScreen() {
   const router = useRouter();
+  const { notifications, markAsRead, markAllAsRead } = useNotificationStore();
 
   return (
     <Screen className="bg-white" withPadding={false}>
-      {/* Hide default header */}
       <Stack.Screen options={{ headerShown: false }} />
 
       {/* Custom Header */}
@@ -89,17 +40,24 @@ export default function NotificationsScreen() {
         >
           <Ionicons name="arrow-back" size={24} color={neutral[900]} />
         </TouchableOpacity>
-        <Text className="text-neutral-900 text-title-lg font-bold">알림 센터</Text>
+        <Text className="flex-1 text-neutral-900 text-title-lg font-bold">알림 센터</Text>
+        
+        {notifications.some(n => !n.isRead) && (
+          <TouchableOpacity onPress={markAllAsRead}>
+            <Text className="text-primary-500 text-label-md font-bold">모두 읽음</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         <View className="py-2">
-          {MOCK_NOTIFICATIONS.length > 0 ? (
-            MOCK_NOTIFICATIONS.map((item) => {
-              const config = TYPE_CONFIG[item.type];
+          {notifications.length > 0 ? (
+            notifications.map((item) => {
+              const config = TYPE_CONFIG[item.type] || TYPE_CONFIG.recommendation;
               return (
                 <TouchableOpacity 
                   key={item.id}
+                  onPress={() => markAsRead(item.id)}
                   className={`px-6 py-4 flex-row items-start border-b border-neutral-50 ${item.isRead ? '' : 'bg-primary-50/30'}`}
                 >
                   <View 
@@ -136,3 +94,4 @@ export default function NotificationsScreen() {
     </Screen>
   );
 }
+

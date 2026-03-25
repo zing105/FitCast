@@ -1,13 +1,12 @@
-/**
- * Settings Screen (설정)
- * 알림, 테마 등 앱의 각종 설정을 관리하는 화면
- */
 import { Screen } from '@/components/ui/Screen';
 import { neutral, primary } from '@/design-tokens';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
-import React, { useState } from 'react';
-import { ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { ScrollView, Switch, Text, TouchableOpacity, View, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const SETTINGS_STORAGE_KEY = '@fitcast_settings';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -18,6 +17,33 @@ export default function SettingsScreen() {
     darkMode: false,
     autoSave: true,
   });
+
+  // Load settings on mount
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const savedSettings = await AsyncStorage.getItem(SETTINGS_STORAGE_KEY);
+        if (savedSettings) {
+          setSettings(JSON.parse(savedSettings));
+        }
+      } catch (error) {
+        console.error('Failed to load settings:', error);
+      }
+    };
+    loadSettings();
+  }, []);
+
+  // Save settings whenever they change
+  useEffect(() => {
+    const saveSettings = async () => {
+      try {
+        await AsyncStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+      } catch (error) {
+        console.error('Failed to save settings:', error);
+      }
+    };
+    saveSettings();
+  }, [settings]);
 
   const toggleSetting = (key: keyof typeof settings) => {
     setSettings(prev => ({ ...prev, [key]: !prev[key] }));
@@ -108,11 +134,17 @@ export default function SettingsScreen() {
 
         <Text className="px-6 py-4 text-neutral-500 text-label-sm font-semibold uppercase tracking-wider">기타</Text>
         <View className="bg-white border-y border-neutral-100">
-          <TouchableOpacity className="flex-row items-center py-4 px-6 border-b border-neutral-100">
+          <TouchableOpacity 
+            onPress={() => router.push('/terms' as any)}
+            className="flex-row items-center py-4 px-6 border-b border-neutral-100"
+          >
             <Text className="flex-1 text-neutral-900 text-body-md font-medium">서비스 이용약관</Text>
             <Ionicons name="chevron-forward" size={16} color={neutral[400]} />
           </TouchableOpacity>
-          <TouchableOpacity className="flex-row items-center py-4 px-6">
+          <TouchableOpacity 
+            onPress={() => router.push('/privacy' as any)}
+            className="flex-row items-center py-4 px-6"
+          >
             <Text className="flex-1 text-neutral-900 text-body-md font-medium">개인정보 처리방침</Text>
             <Ionicons name="chevron-forward" size={16} color={neutral[400]} />
           </TouchableOpacity>
@@ -125,3 +157,4 @@ export default function SettingsScreen() {
     </Screen>
   );
 }
+
