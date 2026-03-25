@@ -132,22 +132,8 @@ export default function SettingsScreen() {
           )}
         </View>
 
-        <Text className="px-6 py-4 text-neutral-500 text-label-sm font-semibold uppercase tracking-wider">기타</Text>
-        <View className="bg-white border-y border-neutral-100">
-          <TouchableOpacity 
-            onPress={() => router.push('/terms' as any)}
-            className="flex-row items-center py-4 px-6 border-b border-neutral-100"
-          >
-            <Text className="flex-1 text-neutral-900 text-body-md font-medium">서비스 이용약관</Text>
-            <Ionicons name="chevron-forward" size={16} color={neutral[400]} />
-          </TouchableOpacity>
-          <TouchableOpacity 
-            onPress={() => router.push('/privacy' as any)}
-            className="flex-row items-center py-4 px-6"
-          >
-            <Text className="flex-1 text-neutral-900 text-body-md font-medium">개인정보 처리방침</Text>
-            <Ionicons name="chevron-forward" size={16} color={neutral[400]} />
-          </TouchableOpacity>
+        <View className="py-10 items-center">
+          <Text className="text-neutral-300 text-caption font-medium">FitCast v1.0.0 (Stable)</Text>
         </View>
 
         <View className="py-10 items-center">

@@ -106,7 +106,9 @@ export default function MyPageScreen() {
             <Text className="px-6 py-2 text-neutral-500 text-label-sm font-semibold mt-6 mb-1">지원</Text>
             <View className="bg-white border-y border-neutral-100">
                 {renderMenuItem("help-circle-outline", "도움말", () => router.push('/help' as any))}
-                {renderMenuItem("chatbubble-ellipses-outline", "피드백 보내기", () => router.push('/feedback' as any), true)}
+                {renderMenuItem("chatbubble-ellipses-outline", "피드백 보내기", () => router.push('/feedback' as any))}
+                {renderMenuItem("document-text-outline", "서비스 이용약관", () => router.push('/terms' as any))}
+                {renderMenuItem("lock-closed-outline", "개인정보 처리방침", () => router.push('/privacy' as any), true)}
             </View>
         </View>
         
