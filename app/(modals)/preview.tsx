@@ -92,7 +92,10 @@ export default function PreviewScreen() {
 
   // 저장하기 로직 연결 (Supabase 업로드 포함)
   const handleSave = async () => {
-    if (!analysisResult || !user) {
+    if (!analysisResult) return;
+    if (isSaving) return; // Prevent multiple clicks
+
+    if (!user) {
       alert('로그인이 필요하거나 분석이 완료되지 않았습니다.');
       return;
     }
@@ -261,11 +264,12 @@ export default function PreviewScreen() {
       {/* Validating Footer */}
       <View className="absolute bottom-0 w-full bg-white border-t border-neutral-100 px-6 py-4 pb-10 shadow-lg">
          <Button 
-            title="이대로 저장하기" 
+            title={isSaving ? "저장 중..." : "이대로 저장하기"} 
             fullWidth 
             size="lg" 
-            onPress={handleSave}
+            onPress={isSaving ? undefined : handleSave}
             rightIcon="checkmark-circle"
+            disabled={isSaving}
          />
       </View>
     </Screen>
