@@ -207,7 +207,7 @@ export default function OOTDDetailScreen() {
         <View className="flex-row gap-3">
           <View className="flex-1">
             <Button 
-               title={isAlreadySaved ? "코디 저장됨" : "코디 저장"}
+               title={isAlreadySaved ? "저장됨" : "저장"}
                fullWidth 
                variant={isAlreadySaved ? "outline" : "outline"} // Stay consistent or change if desired
                size="lg" 

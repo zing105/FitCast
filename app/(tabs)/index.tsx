@@ -168,8 +168,10 @@ export default function HomeScreen() {
                 "오늘의 코디가 선택되었습니다!\n멋진 하루 보내세요 ✨"
               ) : recommendation ? (
                 recommendation.message
+              ) : weather ? (
+                `${weather.temp}°C ${weather.condition === 'Sunny' ? '☀️ 맑음' : weather.condition === 'Cloudy' ? '☁️ 흐림' : weather.condition === 'Rainy' ? '🌧️ 비' : '❄️ 눈'}`
               ) : (
-                "분석 중..."
+                "날씨 정보를 가져오는 중..."
               )}
             </Text>
 
