@@ -49,8 +49,8 @@ export default function TabLayout() {
           shadowOffset: { width: 0, height: -2 },
           shadowOpacity: 0.1,
           shadowRadius: 8,
-          height: Platform.OS === 'web' ? 72 : 64,
-          paddingBottom: Platform.OS === 'web' ? 16 : 8,
+          height: 64,
+          paddingBottom: 8,
           paddingTop: 8,
         },
         tabBarLabelStyle: {
