@@ -50,7 +50,7 @@ export default function TabLayout() {
           shadowOpacity: 0.1,
           shadowRadius: 8,
           height: 64,
-          paddingBottom: 8,
+          paddingBottom: 4,
           paddingTop: 8,
         },
         tabBarLabelStyle: {
