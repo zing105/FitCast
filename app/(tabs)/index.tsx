@@ -12,7 +12,6 @@ import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'rea
 
 import { AnimatedLogo } from '@/components/ui/AnimatedLogo';
 import { AnimatedMeshGradient } from '@/components/ui/AnimatedMeshGradient';
-import { InstallBanner } from '@/components/ui/InstallBanner';
 import { WaveEffect } from '@/components/ui/WaveEffect';
 import { useRecommendation } from '@/hooks/useRecommendation';
 import { useAuthStore } from '@/store/authStore';
@@ -91,9 +90,6 @@ export default function HomeScreen() {
       {/* Background - 루트 View 직접 자식으로 배치 */}
       <AnimatedMeshGradient variant="home" />
 
-      {/* PWA 설치 배너 (웹 전용) */}
-      <InstallBanner />
-      
       {/* Content - 인라인 style로 투명 배경 강제 */}
       <Screen 
         className="flex-1" 

@@ -11,10 +11,16 @@ import { useRouter, Stack, useLocalSearchParams } from 'expo-router';
 import React from 'react';
 import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
+import { usePWAStore } from '@/store/pwaStore';
+import { PWAInstallModal } from '@/components/ui/PWAInstallModal';
+import { Platform } from 'react-native';
+
 export default function MyPageScreen() {
   const router = useRouter();
   const { isLoggedIn, user } = useAuthStore();
   const logout = useAuthStore((state) => state.logout);
+  const promptInstall = usePWAStore((state) => state.promptInstall);
+  const isStandalone = usePWAStore((state) => state.isStandalone);
   
   const handleLogout = () => {
     logout();
@@ -108,7 +114,10 @@ export default function MyPageScreen() {
                 {renderMenuItem("help-circle-outline", "도움말", () => router.push('/help' as any))}
                 {renderMenuItem("chatbubble-ellipses-outline", "피드백 보내기", () => router.push('/feedback' as any))}
                 {renderMenuItem("document-text-outline", "서비스 이용약관", () => router.push('/terms' as any))}
-                {renderMenuItem("lock-closed-outline", "개인정보 처리방침", () => router.push('/privacy' as any), true)}
+                {renderMenuItem("lock-closed-outline", "개인정보 처리방침", () => router.push('/privacy' as any), Platform.OS !== 'web' || isStandalone)}
+                {(Platform.OS === 'web' && !isStandalone) && (
+                  renderMenuItem("download-outline", "홈 화면에 앱 추가", () => promptInstall(), true)
+                )}
             </View>
         </View>
         
@@ -132,6 +141,9 @@ export default function MyPageScreen() {
         </View>
 
       </ScrollView>
+      
+      {/* iOS가 PWA를 웹에서 사용할 때 보여줄 모달 */}
+      <PWAInstallModal />
     </Screen>
   );
 }

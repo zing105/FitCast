@@ -22,6 +22,7 @@ WebBrowser.maybeCompleteAuthSession();
 
 import { useColorScheme } from '@/components/useColorScheme';
 import { useAuthStore } from '@/store/authStore';
+import { usePWAStore } from '@/store/pwaStore';
 import { supabase } from '@/utils/supabase';
 
 export {
@@ -52,6 +53,9 @@ export default function RootLayout() {
   // 폰트 로딩 에러 처리
   useEffect(() => {
     if (error) throw error;
+    
+    // PWA 로직: 브라우저 환경에서 beforeinstallprompt 이벤트를 미리 잡기 위해 초기화
+    usePWAStore.getState().init();
   }, [error]);
 
   // 🔑 Supabase Auth 상태 변화 리스너 (세션 자동 관리의 핵심!)
