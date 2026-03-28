@@ -22,6 +22,9 @@ export default function Root({ children }: { children: React.ReactNode }) {
         {/* SEO */}
         <meta name="description" content="FitCast - AI 의류 케어 & OOTD 아카이브" />
         <title>FitCast</title>
+        
+        {/* PWA Manifest */}
+        <link rel="manifest" href="/manifest.json" />
 
         {/* 
           Disable body scrolling on web. This makes ScrollView components work closer to how they do on native. 
