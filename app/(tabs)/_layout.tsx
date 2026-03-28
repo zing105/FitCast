@@ -5,7 +5,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { View } from 'react-native';
+import { View, Platform } from 'react-native';
 import { useColorScheme } from '@/components/useColorScheme';
 import { neutral, primary, surface } from '@/design-tokens';
 
@@ -49,8 +49,8 @@ export default function TabLayout() {
           shadowOffset: { width: 0, height: -2 },
           shadowOpacity: 0.1,
           shadowRadius: 8,
-          height: 64,
-          paddingBottom: 8,
+          height: Platform.OS === 'web' ? 72 : 64,
+          paddingBottom: Platform.OS === 'web' ? 16 : 8,
           paddingTop: 8,
         },
         tabBarLabelStyle: {
