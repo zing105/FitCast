@@ -108,6 +108,7 @@ export interface ClothAnalysisResponse {
   category: 'top' | 'bottom' | 'outer' | 'dress' | 'shoes' | 'accessory' | 'etc';
   sub_category: string;
   color: string;
+  color_hex: string;
   pattern: string;
   material: string;
   season: string[];
@@ -134,15 +135,17 @@ export async function analyzeClothImage(base64Image: string): Promise<ClothAnaly
     1. category: "top", "bottom", "outer", "dress", "shoes", "accessory", "etc" 중 가장 알맞은 것 택 1.
     2. sub_category: (예: 반팔 티셔츠, 청바지, 가디건, 스니커즈 등 한국어로 짧게 명사형으로)
     3. color: (주요 색상 1~2개 한국어로, 예: 네이비, 화이트)
-    4. pattern: (무지, 스트라이프, 체크, 플로럴, 그래픽, 도트 등 한국어로)
-    5. material: (면, 데님, 니트, 린넨, 가죽, 폴리에스테르, 나일론 등 옷감 재질 한국어로)
-    6. season: ("봄", "여름", "가을", "겨울" 중 해당하는 계절들의 배열 형식)
+    4. color_hex: (추출한 주요 색상을 나타내는 대표적인 HEX CODE 형식. 반드시 #포함 6자리 소문자로, 예: #000080, #ffffff)
+    5. pattern: (무지, 스트라이프, 체크, 플로럴, 그래픽, 도트 등 한국어로)
+    6. material: (면, 데님, 니트, 린넨, 가죽, 폴리에스테르, 나일론 등 옷감 재질 한국어로)
+    7. season: ("봄", "여름", "가을", "겨울" 중 해당하는 계절들의 배열 형식)
 
     결과는 반드시 아래 JSON 키워드를 가진 객체 형식으로만 줘:
     {
       "category": "top",
       "sub_category": "반팔 셔츠",
       "color": "파란색",
+      "color_hex": "#0000ff",
       "pattern": "스트라이프",
       "material": "면",
       "season": ["봄", "여름"]

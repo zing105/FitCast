@@ -64,6 +64,7 @@ export default function PreviewScreen() {
             category: 'top',
             sub_category: '알 수 없음',
             color: '알 수 없음',
+            color_hex: '#cccccc',
             pattern: '알 수 없음',
             material: '알 수 없음',
             season: ['봄', '여름', '가을', '겨울'],
@@ -230,7 +231,10 @@ export default function PreviewScreen() {
                  <View className="flex-1">
                     <Text className="text-neutral-500 text-label-md font-bold mb-3">색상</Text>
                     <View className="flex-row items-center bg-neutral-50 border border-neutral-200 px-3 py-2 rounded-xl">
-                       <View className="w-6 h-6 rounded-full bg-[#000080] border border-neutral-200 mr-2" />
+                       <View 
+                         className="w-6 h-6 rounded-full border border-neutral-200 mr-2" 
+                         style={{ backgroundColor: analysisResult?.color_hex || '#000080' }}
+                       />
                        <Text className="text-neutral-900 text-body-sm">{analysisResult?.color}</Text>
                     </View>
                  </View>
