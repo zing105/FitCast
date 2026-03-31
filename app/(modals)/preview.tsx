@@ -1,15 +1,12 @@
-/**
- * Preview Screen (미리보기 및 AI 분석 결과)
- * 촬영된 사진을 확인하고 AI 분석 결과를 수정/저장하는 화면
- */
 import { Button } from '@/components/ui/Button';
 import { Screen } from '@/components/ui/Screen';
-import { neutral, primary } from '@/design-tokens';
+import { neutral, primary, secondary } from '@/design-tokens';
 import { Ionicons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Dimensions, Image, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Dimensions, Image, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -17,16 +14,25 @@ import { useAuthStore } from '@/store/authStore';
 import { useClosetStore } from '@/store/closetStore';
 import { analyzeClothImage, ClothAnalysisResponse } from '@/utils/gemini';
 import { uploadClothImage } from '@/utils/supabaseStorage';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function PreviewScreen() {
   const router = useRouter();
   const { photoUri } = useLocalSearchParams<{ photoUri: string }>();
   
-  const addItem = useClosetStore((state) => state.addItem); // Store Action
+  const addItem = useClosetStore((state) => state.addItem);
 
   const [isAnalyzing, setIsAnalyzing] = useState(true);
   const [analysisResult, setAnalysisResult] = useState<ClothAnalysisResponse | null>(null);
+
+  // --- Edit States ---
+  const [isEditing, setIsEditing] = useState(false);
+  const [category, setCategory] = useState<'top' | 'bottom' | 'outer' | 'dress' | 'shoes' | 'accessory' | 'etc'>('top');
+  const [subCategory, setSubCategory] = useState('');
+  const [color, setColor] = useState('');
+  const [pattern, setPattern] = useState('');
+  const [material, setMaterial] = useState('');
+  const [season, setSeason] = useState<string[]>([]);
+  // -------------------
 
   // AI 분석 실행 (Gemini Vision)
   useEffect(() => {
@@ -54,13 +60,20 @@ export default function PreviewScreen() {
         const result = await analyzeClothImage(base64Image as string);
         if (isMounted) {
           setAnalysisResult(result);
+          // Sync with edit states
+          setCategory(result.category);
+          setSubCategory(result.sub_category);
+          setColor(result.color);
+          setPattern(result.pattern);
+          setMaterial(result.material);
+          setSeason(result.season);
           setIsAnalyzing(false);
         }
       } catch (error) {
         console.error('이미지 분석 실패:', error);
         if (isMounted) {
           alert('이미지 분석에 실패했습니다. 형식에 맞춰 기본값이 입력됩니다.');
-          setAnalysisResult({
+          const fallback: ClothAnalysisResponse = {
             category: 'top',
             sub_category: '알 수 없음',
             color: '알 수 없음',
@@ -68,7 +81,14 @@ export default function PreviewScreen() {
             pattern: '알 수 없음',
             material: '알 수 없음',
             season: ['봄', '여름', '가을', '겨울'],
-          });
+          };
+          setAnalysisResult(fallback);
+          setCategory(fallback.category);
+          setSubCategory(fallback.sub_category);
+          setColor(fallback.color);
+          setPattern(fallback.pattern);
+          setMaterial(fallback.material);
+          setSeason(fallback.season);
           setIsAnalyzing(false);
         }
       }
@@ -86,15 +106,13 @@ export default function PreviewScreen() {
   const [isSaving, setIsSaving] = useState(false);
   const { user } = useAuthStore();
 
-  // 다시 찍기
   const handleRetake = () => {
     router.back();
   };
 
-  // 저장하기 로직 연결 (Supabase 업로드 포함)
   const handleSave = async () => {
     if (!analysisResult) return;
-    if (isSaving) return; // Prevent multiple clicks
+    if (isSaving) return;
 
     if (!user) {
       alert('로그인이 필요하거나 분석이 완료되지 않았습니다.');
@@ -104,57 +122,43 @@ export default function PreviewScreen() {
     try {
       setIsSaving(true);
       
-      // 1. 이미지를 Base64로 변환 (플랫폼별 분기 처리)
       let base64Image = '';
       if (Platform.OS === 'web') {
-        // 웹 브라우저에서는 fetch + FileReader 조합 사용
         const response = await fetch(photoUri);
         const blob = await response.blob();
         base64Image = await new Promise((resolve, reject) => {
           const reader = new FileReader();
-          reader.onload = () => {
-            const result = reader.result as string;
-            // 'data:image/jpeg;base64,' 접두사 제거
-            resolve(result.split(',')[1]);
-          };
+          reader.onload = () => resolve((reader.result as string).split(',')[1]);
           reader.onerror = reject;
           reader.readAsDataURL(blob);
         });
       } else {
-        // 네이티브(iOS/Android)에서는 expo-file-system 사용
         base64Image = await FileSystem.readAsStringAsync(photoUri, {
           // @ts-ignore
           encoding: FileSystem.EncodingType.Base64,
         });
       }
 
-      // 2. 파일명 생성 (타임스탬프 기반)
       const fileName = `${user.id}_${Date.now()}.jpg`;
-
-      // 3. Supabase Storage에 업로드 후 Public URL 받기
       const imageUrl = await uploadClothImage(base64Image, fileName);
 
-      // 4. DB에 메타데이터와 함께 저장
       await addItem({
         image_url: imageUrl, 
-        category: analysisResult.category.toLowerCase(), 
-        sub_category: analysisResult.sub_category,
+        category: category.toLowerCase(), 
+        sub_category: subCategory || analysisResult.sub_category,
         brand: 'Unknown', 
-        color: analysisResult.color,
-        pattern: analysisResult.pattern,
-        material: analysisResult.material,
-        season: analysisResult.season,
+        color: color || analysisResult.color,
+        pattern: pattern || analysisResult.pattern,
+        material: material || analysisResult.material,
+        season: season || analysisResult.season,
       }, user.id);
       
-      console.log('✨ 옷장에 저장 완료!', { imageUrl });
-      
-      // 홈으로 이동 및 스택 초기화
       router.dismissAll();
       router.replace('/(tabs)/closet');
       
     } catch (error) {
-      console.error('옷 저장 전체 플로우 에러:', error);
-      alert('저장 중 오류가 발생했습니다. 다시 시도해 주세요.');
+      console.error('옷 저장 에러:', error);
+      alert('저장 중 오류가 발생했습니다.');
     } finally {
       setIsSaving(false);
     }
@@ -168,14 +172,7 @@ export default function PreviewScreen() {
             style={{ width: screenWidth, height: screenWidth * 1.3, position: 'absolute', opacity: 0.3 }} 
             resizeMode="cover"
          />
-         <View 
-            style={{ 
-              backgroundColor: 'rgba(0, 0, 0, 0.8)', 
-              padding: 24, 
-              borderRadius: 16, 
-              alignItems: 'center' 
-            }}
-         >
+         <View style={{ backgroundColor: 'rgba(0, 0, 0, 0.8)', padding: 24, borderRadius: 16, alignItems: 'center' }}>
             <ActivityIndicator size="large" color={primary[500]} style={{ marginBottom: 16 }} />
             <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold', marginBottom: 4 }}>AI가 옷을 분석 중입니다</Text>
             <Text style={{ color: '#a3a3a3', fontSize: 14 }}>패턴, 소재, 색상을 찾고 있어요...</Text>
@@ -187,88 +184,139 @@ export default function PreviewScreen() {
   return (
     <Screen className="bg-neutral-50" withPadding={false}>
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Image Header */}
         <View className="relative">
           <Image
             source={{ uri: photoUri }}
             style={{ width: screenWidth, height: screenWidth * 1.3 }}
             resizeMode="cover"
           />
-          <TouchableOpacity 
-            onPress={handleRetake}
-            className="absolute top-12 left-4 bg-black/50 p-2 rounded-full"
-          >
+          <TouchableOpacity onPress={handleRetake} className="absolute top-12 left-4 bg-black/50 p-2 rounded-full">
              <Ionicons name="arrow-back" size={24} color="white" />
           </TouchableOpacity>
         </View>
 
-        {/* Analysis Result Form */}
-        <View className="bg-white -mt-6 rounded-t-3xl px-6 pt-8 pb-32">
-           <View className="flex-row items-center mb-6">
-              <View className="w-8 h-8 bg-primary-100 rounded-full items-center justify-center mr-2">
-                 <Ionicons name="sparkles" size={16} color={primary[500]} />
+        <View className="bg-white -mt-6 rounded-t-3xl px-6 pt-8 pb-40">
+           <View className="flex-row items-center justify-between mb-6">
+              <View className="flex-row items-center">
+                <View className="w-8 h-8 bg-primary-100 rounded-full items-center justify-center mr-2">
+                   <Ionicons name="sparkles" size={16} color={primary[500]} />
+                </View>
+                <Text className="text-neutral-900 text-title-md font-bold">AI 분석 결과</Text>
               </View>
-              <Text className="text-neutral-900 text-title-md font-bold">AI 분석 결과</Text>
+              <TouchableOpacity 
+                onPress={() => setIsEditing(!isEditing)}
+                className={`px-3 py-1.5 rounded-full ${isEditing ? 'bg-primary-500' : 'bg-neutral-100'}`}
+              >
+                <View className="flex-row items-center">
+                  <Ionicons name={isEditing ? "checkmark" : "create-outline"} size={14} color={isEditing ? "white" : neutral[600]} style={{ marginRight: 4 }} />
+                  <Text className={`text-label-sm font-bold ${isEditing ? 'text-white' : 'text-neutral-600'}`}>
+                    {isEditing ? "수정 완료" : "수정하기"}
+                  </Text>
+                </View>
+              </TouchableOpacity>
            </View>
 
-           {/* Tags Section */}
            <View className="gap-6">
-              {/* Category */}
+              {/* Category Selection */}
               <View>
                  <Text className="text-neutral-500 text-label-md font-bold mb-3">카테고리</Text>
                  <View className="flex-row flex-wrap gap-2">
-                    <View className="bg-primary-50 border border-primary-100 px-4 py-2 rounded-full">
-                       <Text className="text-primary-700 text-body-sm font-medium">{analysisResult?.sub_category}</Text>
-                    </View>
-                    <View className="bg-neutral-50 border border-neutral-200 px-4 py-2 rounded-full">
-                       <Text className="text-neutral-600 text-body-sm">{analysisResult?.category}</Text>
-                    </View>
+                    {(['top', 'bottom', 'outer'] as const).map((cat) => (
+                      <TouchableOpacity 
+                        key={cat}
+                        disabled={!isEditing}
+                        onPress={() => setCategory(cat)}
+                        className={`px-5 py-2.5 rounded-full border ${
+                          category === cat 
+                            ? 'bg-primary-500 border-primary-500' 
+                            : 'bg-neutral-50 border-neutral-100'
+                        }`}
+                      >
+                        <Text className={`text-body-sm font-bold ${category === cat ? 'text-white' : 'text-neutral-400'}`}>
+                          {cat === 'top' ? '상의' : cat === 'bottom' ? '하의' : '아우터'}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
                  </View>
               </View>
 
-              {/* Color & Pattern */}
+              {/* Sub-Category Edit */}
+              <View>
+                 <Text className="text-neutral-500 text-label-md font-bold mb-3">세부 분류</Text>
+                 {isEditing ? (
+                   <TextInput
+                      className="bg-neutral-50 border border-neutral-100 rounded-xl px-4 py-3 text-neutral-900 font-medium"
+                      value={subCategory}
+                      onChangeText={setSubCategory}
+                      placeholder="예: 반팔 티셔츠, 청바지"
+                   />
+                 ) : (
+                   <View className="bg-primary-50 border border-primary-100 px-4 py-2 rounded-full self-start">
+                      <Text className="text-primary-700 text-body-sm font-medium">{subCategory}</Text>
+                   </View>
+                 )}
+              </View>
+
               <View className="flex-row gap-4">
                  <View className="flex-1">
                     <Text className="text-neutral-500 text-label-md font-bold mb-3">색상</Text>
-                    <View className="flex-row items-center bg-neutral-50 border border-neutral-200 px-3 py-2 rounded-xl">
-                       <View 
-                         className="w-6 h-6 rounded-full border border-neutral-200 mr-2" 
-                         style={{ backgroundColor: analysisResult?.color_hex || '#000080' }}
-                       />
-                       <Text className="text-neutral-900 text-body-sm">{analysisResult?.color}</Text>
-                    </View>
+                    {isEditing ? (
+                      <TextInput
+                        className="bg-neutral-50 border border-neutral-100 rounded-xl px-4 py-3 text-neutral-900"
+                        value={color}
+                        onChangeText={setColor}
+                      />
+                    ) : (
+                      <View className="flex-row items-center bg-neutral-50 border border-neutral-200 px-3 py-2 rounded-xl">
+                         <View 
+                           className="w-6 h-6 rounded-full border border-neutral-200 mr-2" 
+                           style={{ backgroundColor: analysisResult?.color_hex || '#cccccc' }}
+                         />
+                         <Text className="text-neutral-900 text-body-sm">{color}</Text>
+                      </View>
+                    )}
                  </View>
                  <View className="flex-1">
                     <Text className="text-neutral-500 text-label-md font-bold mb-3">패턴</Text>
-                    <View className="bg-neutral-50 border border-neutral-200 px-3 py-2 rounded-xl items-center">
-                       <Text className="text-neutral-900 text-body-sm">{analysisResult?.pattern}</Text>
-                    </View>
+                    {isEditing ? (
+                      <TextInput
+                        className="bg-neutral-50 border border-neutral-100 rounded-xl px-4 py-3 text-neutral-900"
+                        value={pattern}
+                        onChangeText={setPattern}
+                      />
+                    ) : (
+                      <View className="bg-neutral-50 border border-neutral-200 px-3 py-2 rounded-xl items-center">
+                         <Text className="text-neutral-900 text-body-sm">{pattern}</Text>
+                      </View>
+                    )}
                  </View>
               </View>
 
-              {/* Material Inference */}
               <View>
                  <View className="flex-row justify-between items-center mb-3">
                     <Text className="text-neutral-500 text-label-md font-bold">소재 (AI 추론)</Text>
-                    <Ionicons name="information-circle-outline" size={18} color={neutral[400]} />
+                    {!isEditing && <Ionicons name="information-circle-outline" size={18} color={neutral[400]} />}
                  </View>
-                 <View className="bg-secondary-50 border border-secondary-100 p-4 rounded-xl">
-                    <Text className="text-secondary-900 text-body-sm font-medium mb-1">
-                       {analysisResult?.material}
-                    </Text>
-                    <Text className="text-secondary-700 text-caption">
-                       Gemini Vision AI가 이미지를 바탕으로 추론한 결과입니다.
-                    </Text>
-                 </View>
+                 {isEditing ? (
+                    <TextInput
+                      className="bg-neutral-50 border border-neutral-100 rounded-xl px-4 py-3 text-neutral-900"
+                      value={material}
+                      onChangeText={setMaterial}
+                    />
+                 ) : (
+                   <View className="bg-secondary-50 border border-secondary-100 p-4 rounded-xl">
+                      <Text className="text-secondary-900 text-body-sm font-medium mb-1">{material}</Text>
+                      <Text className="text-secondary-700 text-caption">Gemini Vision AI가 추론한 결과입니다.</Text>
+                   </View>
+                 )}
               </View>
            </View>
         </View>
       </ScrollView>
 
-      {/* Validating Footer */}
       <View className="absolute bottom-0 w-full bg-white border-t border-neutral-100 px-6 py-4 pb-10 shadow-lg">
          <Button 
-            title={isSaving ? "저장 중..." : "이대로 저장하기"} 
+            title={isSaving ? "저장 중..." : isEditing ? "수정 완료 및 저장하기" : "이대로 저장하기"} 
             fullWidth 
             size="lg" 
             onPress={isSaving ? undefined : handleSave}
