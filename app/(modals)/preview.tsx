@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Dimensions, Image, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Dimensions, Image, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -295,37 +295,80 @@ export default function PreviewScreen() {
                  )}
               </View>
 
-              <View className="flex-row gap-4">
-                 <View className="flex-1">
-                    <Text className="text-neutral-500 text-label-md font-bold mb-3">색상</Text>
-                    <TouchableOpacity
-                      onPress={() => { if (isEditing) setShowColorPicker(true); }}
-                      activeOpacity={isEditing ? 0.7 : 1}
-                    >
-                      <View className="flex-row items-center bg-neutral-50 border border-neutral-200 px-3 py-2.5 rounded-xl">
-                         <View 
-                           className="w-6 h-6 rounded-full border border-neutral-300 mr-2" 
-                           style={{ backgroundColor: colorHex }}
-                         />
-                         <Text className="text-neutral-900 text-body-sm flex-1">{color}</Text>
-                         {isEditing && <Ionicons name="chevron-down" size={14} color={neutral[400]} />}
-                      </View>
-                    </TouchableOpacity>
-                 </View>
-                 <View className="flex-1">
-                    <Text className="text-neutral-500 text-label-md font-bold mb-3">패턴</Text>
-                    {isEditing ? (
-                      <TextInput
-                        className="bg-neutral-50 border border-neutral-100 rounded-xl px-4 py-3 text-neutral-900"
-                        value={pattern}
-                        onChangeText={setPattern}
+              <View>
+                 <Text className="text-neutral-500 text-label-md font-bold mb-3">색상</Text>
+                 <TouchableOpacity
+                   onPress={() => { if (isEditing) setShowColorPicker(!showColorPicker); }}
+                   activeOpacity={isEditing ? 0.7 : 1}
+                 >
+                   <View className="flex-row items-center bg-neutral-50 border border-neutral-200 px-3 py-2.5 rounded-xl">
+                      <View 
+                        className="w-6 h-6 rounded-full border border-neutral-300 mr-2" 
+                        style={{ backgroundColor: colorHex }}
                       />
-                    ) : (
-                      <View className="bg-neutral-50 border border-neutral-200 px-3 py-2 rounded-xl items-center">
-                         <Text className="text-neutral-900 text-body-sm">{pattern}</Text>
-                      </View>
-                    )}
-                 </View>
+                      <Text className="text-neutral-900 text-body-sm flex-1">{color}</Text>
+                      {isEditing && <Ionicons name={showColorPicker ? "chevron-up" : "chevron-down"} size={14} color={neutral[400]} />}
+                   </View>
+                 </TouchableOpacity>
+
+                 {/* Inline Color Palette */}
+                 {showColorPicker && isEditing && (
+                   <View style={{ 
+                     marginTop: 10, 
+                     backgroundColor: '#fafafa', 
+                     borderRadius: 16, 
+                     borderWidth: 1, 
+                     borderColor: '#e5e5e5',
+                     padding: 12,
+                   }}>
+                     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, justifyContent: 'center' }}>
+                       {COLOR_PALETTE.map((c) => (
+                         <TouchableOpacity
+                           key={c.hex}
+                           onPress={() => {
+                             setColor(c.name);
+                             setColorHex(c.hex);
+                             setShowColorPicker(false);
+                           }}
+                           style={{
+                             alignItems: 'center',
+                             width: 54,
+                             paddingVertical: 6,
+                             borderRadius: 10,
+                             backgroundColor: colorHex === c.hex ? '#EEF2FF' : 'transparent',
+                             borderWidth: colorHex === c.hex ? 1.5 : 0,
+                             borderColor: primary[400],
+                           }}
+                         >
+                           <View style={{
+                             width: 32, height: 32, borderRadius: 16,
+                             backgroundColor: c.hex,
+                             borderWidth: 1,
+                             borderColor: c.hex === '#f5f5f5' || c.hex === '#fffff0' || c.hex === '#fffdd0' ? '#d4d4d4' : 'rgba(0,0,0,0.08)',
+                             marginBottom: 3,
+                           }} />
+                           <Text style={{ fontSize: 9, color: '#525252', textAlign: 'center' }}>{c.name}</Text>
+                         </TouchableOpacity>
+                       ))}
+                     </View>
+                   </View>
+                 )}
+              </View>
+
+              {/* Pattern & Material */}
+              <View>
+                 <Text className="text-neutral-500 text-label-md font-bold mb-3">패턴</Text>
+                 {isEditing ? (
+                   <TextInput
+                     className="bg-neutral-50 border border-neutral-100 rounded-xl px-4 py-3 text-neutral-900"
+                     value={pattern}
+                     onChangeText={setPattern}
+                   />
+                 ) : (
+                   <View className="bg-neutral-50 border border-neutral-200 px-3 py-2 rounded-xl items-center">
+                      <Text className="text-neutral-900 text-body-sm">{pattern}</Text>
+                   </View>
+                 )}
               </View>
 
               <View>
@@ -349,63 +392,6 @@ export default function PreviewScreen() {
            </View>
         </View>
       </ScrollView>
-
-      {/* Color Picker Modal */}
-      <Modal
-        visible={showColorPicker}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowColorPicker(false)}
-      >
-        <TouchableOpacity 
-          style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}
-          activeOpacity={1}
-          onPress={() => setShowColorPicker(false)}
-        >
-          <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()}>
-            <View style={{ backgroundColor: 'white', borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingHorizontal: 20, paddingTop: 20, paddingBottom: 40, maxHeight: 420 }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#171717' }}>색상 선택</Text>
-                <TouchableOpacity onPress={() => setShowColorPicker(false)}>
-                  <Ionicons name="close" size={24} color={neutral[500]} />
-                </TouchableOpacity>
-              </View>
-              <ScrollView showsVerticalScrollIndicator={false}>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
-                  {COLOR_PALETTE.map((c) => (
-                    <TouchableOpacity
-                      key={c.hex}
-                      onPress={() => {
-                        setColor(c.name);
-                        setColorHex(c.hex);
-                        setShowColorPicker(false);
-                      }}
-                      style={{
-                        alignItems: 'center',
-                        width: 60,
-                        paddingVertical: 8,
-                        borderRadius: 12,
-                        backgroundColor: colorHex === c.hex ? '#EEF2FF' : 'transparent',
-                        borderWidth: colorHex === c.hex ? 1.5 : 0,
-                        borderColor: primary[400],
-                      }}
-                    >
-                      <View style={{
-                        width: 36, height: 36, borderRadius: 18,
-                        backgroundColor: c.hex,
-                        borderWidth: 1.5,
-                        borderColor: c.hex === '#f5f5f5' || c.hex === '#fffff0' || c.hex === '#fffdd0' ? '#d4d4d4' : 'transparent',
-                        marginBottom: 4,
-                      }} />
-                      <Text style={{ fontSize: 10, color: '#525252', textAlign: 'center' }}>{c.name}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </ScrollView>
-            </View>
-          </TouchableOpacity>
-        </TouchableOpacity>
-      </Modal>
 
       <View className="absolute bottom-0 w-full bg-white border-t border-neutral-100 px-6 py-4 pb-10 shadow-lg">
          <Button 
