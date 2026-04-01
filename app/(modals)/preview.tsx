@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Dimensions, Image, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Dimensions, Image, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -14,6 +14,40 @@ import { useAuthStore } from '@/store/authStore';
 import { useClosetStore } from '@/store/closetStore';
 import { analyzeClothImage, ClothAnalysisResponse } from '@/utils/gemini';
 import { uploadClothImage } from '@/utils/supabaseStorage';
+
+// 의류에 자주 사용되는 색상 팔레트
+const COLOR_PALETTE = [
+  { name: '블랙', hex: '#1a1a1a' },
+  { name: '차콜', hex: '#3d3d3d' },
+  { name: '그레이', hex: '#8c8c8c' },
+  { name: '라이트 그레이', hex: '#c8c8c8' },
+  { name: '화이트', hex: '#f5f5f5' },
+  { name: '아이보리', hex: '#fffff0' },
+  { name: '크림', hex: '#fffdd0' },
+  { name: '베이지', hex: '#d4b896' },
+  { name: '카키', hex: '#8b7d5b' },
+  { name: '브라운', hex: '#6b4226' },
+  { name: '버건디', hex: '#800020' },
+  { name: '레드', hex: '#d32f2f' },
+  { name: '코랄', hex: '#ff7f50' },
+  { name: '오렌지', hex: '#f57c00' },
+  { name: '머스타드', hex: '#c89b35' },
+  { name: '옐로우', hex: '#fdd835' },
+  { name: '라임', hex: '#9acd32' },
+  { name: '올리브', hex: '#6b6b3d' },
+  { name: '그린', hex: '#2e7d32' },
+  { name: '민트', hex: '#98d9c2' },
+  { name: '스카이블루', hex: '#87ceeb' },
+  { name: '라이트블루', hex: '#64b5f6' },
+  { name: '블루', hex: '#1565c0' },
+  { name: '네이비', hex: '#1a237e' },
+  { name: '라벤더', hex: '#b39ddb' },
+  { name: '퍼플', hex: '#6a1b9a' },
+  { name: '핑크', hex: '#ec407a' },
+  { name: '로즈', hex: '#e8a0bf' },
+  { name: '데님', hex: '#4a6fa5' },
+  { name: '카모', hex: '#5c6b3c' },
+];
 
 export default function PreviewScreen() {
   const router = useRouter();
@@ -29,6 +63,8 @@ export default function PreviewScreen() {
   const [category, setCategory] = useState<'top' | 'bottom' | 'outer' | 'dress' | 'shoes' | 'accessory' | 'etc'>('top');
   const [subCategory, setSubCategory] = useState('');
   const [color, setColor] = useState('');
+  const [colorHex, setColorHex] = useState('#cccccc');
+  const [showColorPicker, setShowColorPicker] = useState(false);
   const [pattern, setPattern] = useState('');
   const [material, setMaterial] = useState('');
   const [season, setSeason] = useState<string[]>([]);
@@ -64,6 +100,7 @@ export default function PreviewScreen() {
           setCategory(result.category);
           setSubCategory(result.sub_category);
           setColor(result.color);
+          setColorHex(result.color_hex || '#cccccc');
           setPattern(result.pattern);
           setMaterial(result.material);
           setSeason(result.season);
@@ -86,6 +123,7 @@ export default function PreviewScreen() {
           setCategory(fallback.category);
           setSubCategory(fallback.sub_category);
           setColor(fallback.color);
+          setColorHex(fallback.color_hex || '#cccccc');
           setPattern(fallback.pattern);
           setMaterial(fallback.material);
           setSeason(fallback.season);
@@ -260,21 +298,19 @@ export default function PreviewScreen() {
               <View className="flex-row gap-4">
                  <View className="flex-1">
                     <Text className="text-neutral-500 text-label-md font-bold mb-3">색상</Text>
-                    {isEditing ? (
-                      <TextInput
-                        className="bg-neutral-50 border border-neutral-100 rounded-xl px-4 py-3 text-neutral-900"
-                        value={color}
-                        onChangeText={setColor}
-                      />
-                    ) : (
-                      <View className="flex-row items-center bg-neutral-50 border border-neutral-200 px-3 py-2 rounded-xl">
+                    <TouchableOpacity
+                      onPress={() => { if (isEditing) setShowColorPicker(true); }}
+                      activeOpacity={isEditing ? 0.7 : 1}
+                    >
+                      <View className="flex-row items-center bg-neutral-50 border border-neutral-200 px-3 py-2.5 rounded-xl">
                          <View 
-                           className="w-6 h-6 rounded-full border border-neutral-200 mr-2" 
-                           style={{ backgroundColor: analysisResult?.color_hex || '#cccccc' }}
+                           className="w-6 h-6 rounded-full border border-neutral-300 mr-2" 
+                           style={{ backgroundColor: colorHex }}
                          />
-                         <Text className="text-neutral-900 text-body-sm">{color}</Text>
+                         <Text className="text-neutral-900 text-body-sm flex-1">{color}</Text>
+                         {isEditing && <Ionicons name="chevron-down" size={14} color={neutral[400]} />}
                       </View>
-                    )}
+                    </TouchableOpacity>
                  </View>
                  <View className="flex-1">
                     <Text className="text-neutral-500 text-label-md font-bold mb-3">패턴</Text>
@@ -313,6 +349,63 @@ export default function PreviewScreen() {
            </View>
         </View>
       </ScrollView>
+
+      {/* Color Picker Modal */}
+      <Modal
+        visible={showColorPicker}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowColorPicker(false)}
+      >
+        <TouchableOpacity 
+          style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}
+          activeOpacity={1}
+          onPress={() => setShowColorPicker(false)}
+        >
+          <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()}>
+            <View style={{ backgroundColor: 'white', borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingHorizontal: 20, paddingTop: 20, paddingBottom: 40, maxHeight: 420 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#171717' }}>색상 선택</Text>
+                <TouchableOpacity onPress={() => setShowColorPicker(false)}>
+                  <Ionicons name="close" size={24} color={neutral[500]} />
+                </TouchableOpacity>
+              </View>
+              <ScrollView showsVerticalScrollIndicator={false}>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
+                  {COLOR_PALETTE.map((c) => (
+                    <TouchableOpacity
+                      key={c.hex}
+                      onPress={() => {
+                        setColor(c.name);
+                        setColorHex(c.hex);
+                        setShowColorPicker(false);
+                      }}
+                      style={{
+                        alignItems: 'center',
+                        width: 60,
+                        paddingVertical: 8,
+                        borderRadius: 12,
+                        backgroundColor: colorHex === c.hex ? '#EEF2FF' : 'transparent',
+                        borderWidth: colorHex === c.hex ? 1.5 : 0,
+                        borderColor: primary[400],
+                      }}
+                    >
+                      <View style={{
+                        width: 36, height: 36, borderRadius: 18,
+                        backgroundColor: c.hex,
+                        borderWidth: 1.5,
+                        borderColor: c.hex === '#f5f5f5' || c.hex === '#fffff0' || c.hex === '#fffdd0' ? '#d4d4d4' : 'transparent',
+                        marginBottom: 4,
+                      }} />
+                      <Text style={{ fontSize: 10, color: '#525252', textAlign: 'center' }}>{c.name}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </ScrollView>
+            </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
 
       <View className="absolute bottom-0 w-full bg-white border-t border-neutral-100 px-6 py-4 pb-10 shadow-lg">
          <Button 
