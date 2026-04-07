@@ -5,6 +5,7 @@
 import { ClothItem, useClosetStore } from '@/store/closetStore';
 import * as Location from 'expo-location';
 import { useEffect, useMemo, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface WeatherInfo {
     temp: number;
@@ -32,9 +33,25 @@ export function useRecommendation() {
     // 1. 날씨 정보 가져오기 (OpenWeatherMap API 연동)
     useEffect(() => {
         let isMounted = true;
+        const CACHE_KEY = '@weather_cache';
+        const CACHE_EXPIRATION_MS = 30 * 60 * 1000; // 30분
 
         async function fetchWeather() {
             try {
+                // 0. 캐시 데이터 확인 (30분 이내면 위치 권한 요청 건너뜀)
+                const cachedDataStr = await AsyncStorage.getItem(CACHE_KEY);
+                if (cachedDataStr) {
+                    const cachedData = JSON.parse(cachedDataStr);
+                    if (Date.now() - cachedData.timestamp < CACHE_EXPIRATION_MS) {
+                        console.log('캐시된 날씨 정보를 사용합니다. 위치 요청을 건너뜁니다.');
+                        if (isMounted) {
+                            setWeather(cachedData.weather);
+                            setIsLoading(false);
+                        }
+                        return; // 캐시가 유효하면 여기서 종료
+                    }
+                }
+
                 // 1. 위치 권한 요청
                 const { status } = await Location.requestForegroundPermissionsAsync();
                 if (status !== 'granted') {
@@ -75,8 +92,15 @@ export function useRecommendation() {
                 else if (conditionCode === 'Clear') condition = 'Sunny';
 
                 if (isMounted) {
-                    setWeather({ temp, condition, location: cityName });
+                    const newWeather = { temp, condition, location: cityName };
+                    setWeather(newWeather);
                     setIsLoading(false);
+                    
+                    // 캐시에 저장
+                    AsyncStorage.setItem(CACHE_KEY, JSON.stringify({ 
+                        weather: newWeather, 
+                        timestamp: Date.now() 
+                    })).catch(err => console.log('날씨 캐시 저장 에러', err));
                 }
 
             } catch (error) {
