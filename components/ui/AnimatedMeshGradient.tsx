@@ -26,13 +26,13 @@ const VARIANTS = {
     durations: [20000, 28000, 24000, 32000],
   },
   ai: {
-    baseBg: '#F8F9FF',
-    overlay: 'rgba(255, 255, 255, 0.15)',
+    baseBg: '#FFFFFF',
+    overlay: 'rgba(255, 255, 255, 0.2)',
     colors: [
-      'rgba(108, 92, 231, 0.55)',    // Deep Magic Purple
-      'rgba(0, 206, 201, 0.50)',     // Magic Turquoise
-      'rgba(255, 118, 117, 0.45)',   // Magic Coral
-      'rgba(162, 155, 254, 0.50)',   // Soft Magic Purple
+      'rgba(108, 92, 231, 0.18)',    // Deep Magic Purple (Softened)
+      'rgba(0, 206, 201, 0.15)',     // Magic Turquoise (Softened)
+      'rgba(255, 118, 117, 0.12)',   // Magic Coral (Softened)
+      'rgba(162, 155, 254, 0.15)',   // Soft Magic Purple (Softened)
     ],
     durations: [12000, 15000, 18000, 20000],
   }
